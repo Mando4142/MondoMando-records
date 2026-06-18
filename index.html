@@ -46,7 +46,6 @@
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 25px var(--neon-pink); } 100% { transform: scale(1); opacity: 0.8; } }
         .countdown-text { font-size: 18px; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 242, 254, 0.5); }
         
-        /* Neuer Style für den Live-Zeitticker im Stream */
         .stream-time-box { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0, 242, 254, 0.3); font-family: sans-serif; font-size: 15px; }
         .time-highlight { color: var(--neon-cyan); font-weight: bold; text-shadow: 0 0 5px rgba(0, 242, 254, 0.6); }
         .time-urgent { color: var(--neon-pink); font-weight: bold; text-shadow: 0 0 5px rgba(255, 0, 127, 0.6); }
@@ -80,6 +79,15 @@
         .badge-hit { background-color: var(--neon-gold); color: black; font-family: 'Impact', sans-serif; font-size: 12px; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; box-shadow: 0 0 10px var(--neon-gold); }
         .badge-done { background-color: #22c55e; color: white; font-family: 'Impact', sans-serif; font-size: 12px; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; }
         .no-hits { font-family: sans-serif; color: var(--text-muted); text-align: center; padding: 15px 0; font-size: 15px; }
+
+        /* NEU: Custom Danke-Modal / Popup */
+        .thank-you-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(5,5,10,0.95); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .thank-you-overlay.show { opacity: 1; pointer-events: auto; }
+        .thank-you-card { max-width: 500px; width: 90%; text-align: center; border: 3px solid var(--neon-pink); box-shadow: 0 0 30px var(--neon-pink); background: #13131a; border-radius: 16px; padding: 40px; }
+        .thank-you-title { font-size: 32px; color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); margin-bottom: 20px; }
+        .thank-you-speech { font-family: sans-serif; font-size: 16px; line-height: 1.6; color: var(--text-main); margin-bottom: 25px; }
+        .btn-close-thankyou { background: var(--neon-pink); color: white; border: none; padding: 12px 30px; font-family: 'Impact', sans-serif; font-size: 18px; border-radius: 6px; letter-spacing: 1px; cursor: pointer; box-shadow: 0 0 15px var(--neon-pink); transition: transform 0.2s; }
+        .btn-close-thankyou:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -87,7 +95,7 @@
     <div class="overlay-container">
         <div class="interface-content">
             <div class="logo-container"><img src="logo.png" alt="Mondo Mando Studio" onerror="this.style.display='none';"></div>
-            <div class="stream-schedule-title">Jeden Sonntag um 21:00 Uhr Live</div>
+            <div class="stream-schedule-title">Jeden Sonntag um 18:00 Uhr Live</div>
             
             <div class="card">
                 <div class="status-container">
@@ -109,7 +117,8 @@
                 <form id="songForm" onsubmit="addSongToServer(event)">
                     <div class="form-group">
                         <label for="artistName">Künstlername</label>
-                        <input type="text" id="artistName" required placeholder="z.B. Mando">
+                        <input type="text" id="artistName" required placeholder="z.B. Mando" oninput="checkArtistLimit()">
+                        <div id="artist-error" class="error-message">🚫 Limit erreicht! Du hast bereits 2 aktive Songs eingereicht.</div>
                     </div>
                     <div class="form-group">
                         <label for="songTitle">Song Titel</label>
@@ -175,8 +184,21 @@
             </div>
         </div>
     </div>
+
+    <div id="thankYouOverlay" class="thank-you-overlay">
+        <div class="thank-you-card">
+            <div class="thank-you-title">Vielen Dank! 🔥</div>
+            <div class="thank-you-speech">
+                Dein Track wurde erfolgreich im <strong>Mondo Mando Studio</strong> registriert! Schalte am Sonntag pünktlich ein, sei im Chat am Start und feiere mit der Community. Dein Feedback wartet auf dich!
+            </div>
+            <button class="btn-close-thankyou" onclick="closeThankYou()">LET'S GO</button>
+        </div>
+    </div>
+
 <script>
     const FEEDBACK_BUFFER_SEC = 120;
+    let currentGlobalQueue = []; // Speichert die Queue für lokale Validierungen
+
     function checkGenreSafety() {
         const genre = document.getElementById('genre').value;
         const errorBox = document.getElementById('genre-error');
@@ -184,22 +206,86 @@
         if (["Schlager", "Hardstyle", "Hardcore", "Metal"].includes(genre)) {
             errorBox.style.display = "block"; submitBtn.disabled = true; submitBtn.style.opacity = "0.3"; submitBtn.style.cursor = "not-allowed";
         } else {
-            errorBox.style.display = "none"; submitBtn.disabled = false; submitBtn.style.opacity = "1"; submitBtn.style.cursor = "pointer";
+            errorBox.style.display = "none"; 
+            // Falls das Limit des Künstlers nicht überschritten ist, wieder freigeben
+            if(!checkArtistLimit()) {
+                submitBtn.disabled = false; submitBtn.style.opacity = "1"; submitBtn.style.cursor = "pointer";
+            }
         }
     }
+
+    // NEU: Überprüft, wie viele aktive Songs ein Künstler bereits in der Warteliste hat
+    function checkArtistLimit() {
+        const nameInput = document.getElementById('artistName').value.trim().toLowerCase();
+        const artistError = document.getElementById('artist-error');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (nameInput === "") {
+            artistError.style.display = "none";
+            return false;
+        }
+
+        // Zähle nur unbewertete Songs (isDone === false)
+        const activeSongsFromArtist = currentGlobalQueue.filter(item => !item.isDone && item.artist.toLowerCase() === nameInput);
+        
+        if (activeSongsFromArtist.length >= 2) {
+            artistError.style.display = "block";
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.3";
+            submitBtn.style.cursor = "not-allowed";
+            return true;
+        } else {
+            artistError.style.display = "none";
+            return false;
+        }
+    }
+
+    // NEU: Sortiert die Songs so, dass Zweitsongs ans Ende geschoben werden (Interleaving)
+    function arrangeQueueInterleaved(songs) {
+        const active = songs.filter(item => !item.isDone);
+        const done = songs.filter(item => item.isDone);
+        
+        let orderedActive = [];
+        let mapArtists = new Map();
+
+        // Gruppiere Songs nach Künstler
+        active.forEach(song => {
+            const art = song.artist.toLowerCase();
+            if (!mapArtists.has(art)) mapArtists.set(art, []);
+            mapArtists.get(art).push(song);
+        });
+
+        // Schiebe die Songs abwechselnd in die Liste (Erst-Songs zuerst, dann Zweit-Songs)
+        let maxSongs = 0;
+        mapArtists.forEach(list => { if(list.length > maxSongs) maxSongs = list.length; });
+
+        for (let i = 0; i < maxSongs; i++) {
+            mapArtists.forEach((list) => {
+                if (list[i]) {
+                    orderedActive.push(list[i]);
+                }
+            });
+        }
+
+        // Kombiniere die neu geordneten aktiven Songs mit den erledigten Songs
+        return [...orderedActive, ...done];
+    }
+
     async function loadQueue() {
         try {
             const res = await fetch('/api/queue'); const data = await res.json();
+            let queue = data.queue || [];
             
-            // FIX: Da die Songs im neuen JSON-Format in data.queue liegen
-            const queue = data.queue || [];
+            currentGlobalQueue = queue; // Update globalen Cache für Validierung
             
+            // NEU: Sortierung der Warteliste anwenden
+            queue = arrangeQueueInterleaved(queue);
+
             const activeList = document.getElementById('queue-list');
             const doneList = document.getElementById('done-list');
             const hitList = document.getElementById('hit-bestenliste');
             const submitBtn = document.getElementById('submitBtn');
             
-            // UPDATED: Nutzt die sekundengenauen Daten direkt vom Server
             if (!data.submissionsOpen || data.remainingSecondsTotal <= 0) {
                 document.getElementById('time-left-pot').innerText = "VOLL / GESPERRT";
                 document.getElementById('time-left-pot').className = "time-urgent";
@@ -213,8 +299,11 @@
                 const secFormatted = data.remainingSeconds < 10 ? '0' + data.remainingSeconds : data.remainingSeconds;
                 document.getElementById('time-left-pot').innerText = `${data.remainingMinutes} Min. ${secFormatted} Sek.`;
                 document.getElementById('time-left-pot').className = "time-highlight";
-                submitBtn.disabled = false;
-                submitBtn.innerText = "SONG EINSENDEN";
+                // Falls kein anderes Limit greift, freigeben
+                if(!document.getElementById('genre-error').style.display === "block" && !checkArtistLimit()) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "SONG EINSENDEN";
+                }
             }
             
             document.getElementById('estimated-wait').innerText = data.spentFormatted;
@@ -276,8 +365,13 @@
             });
         } catch(e) { console.log(e); }
     }
+
     async function addSongToServer(e) {
         e.preventDefault();
+        
+        // Letzter Check vor dem Absenden
+        if (checkArtistLimit()) return;
+
         const artist = document.getElementById('artistName').value;
         const title = document.getElementById('songTitle').value;
         const songLink = document.getElementById('songLink').value;
@@ -296,22 +390,35 @@
             alert("Sperre: " + resData.error);
         } else {
             document.getElementById('songForm').reset(); 
+            showThankYou(); // NEU: Aktiviert die stylische Dankesrede
             loadQueue();
         }
     }
+
+    // NEU: Funktionen für die Bestätigungs-Dankesrede
+    function showThankYou() {
+        document.getElementById('thankYouOverlay').classList.add('show');
+    }
+    function closeThankYou() {
+        document.getElementById('thankYouOverlay').classList.remove('show');
+    }
+
+    // Geändert: Zielzeit auf 18:00 Uhr angepasst
     function updateCountdown() {
         const now = new Date(); const currentDay = now.getDay(); const currentHour = now.getHours(); const currentMin = now.getMinutes();
-        let target = new Date(); target.setHours(21, 0, 0, 0); let daysToAdd = (7 - currentDay) % 7;
+        let target = new Date(); target.setHours(18, 0, 0, 0); let daysToAdd = (7 - currentDay) % 7;
         if (currentDay === 0) {
-            if (currentHour >= 21 && (currentHour < 23 || (currentHour === 23 && currentMin < 10))) {
+            // Zeigt "LIVE" von 18:00 Uhr bis ca. 20:10 Uhr an (entspricht Showdauer)
+            if (currentHour >= 18 && (currentHour < 20 || (currentHour === 20 && currentMin < 10))) {
                 document.getElementById('live-badge').style.display = "inline-block"; document.getElementById('stream-status-title').innerText = " SHOW IS LIVE"; document.getElementById('countdown').innerText = "JETZT EINSCHALTEN!"; return;
-            } else if (currentHour >= 23) { daysToAdd = 7; }
+            } else if (currentHour >= 20) { daysToAdd = 7; }
         }
         target.setDate(now.getDate() + daysToAdd); const diff = target - now;
         const d = Math.floor(diff / (1000 * 60 * 60 * 24)); const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         document.getElementById('live-badge').style.display = "none"; document.getElementById('stream-status-title').innerText = "NÄCHSTER STREAM";
         document.getElementById('countdown').innerText = `${d} TAGE, ${h} STD. / ${m} MIN.`;
     }
+    
     setInterval(updateCountdown, 60000); updateCountdown(); loadQueue(); setInterval(loadQueue, 5000);
 </script>
 </body>
