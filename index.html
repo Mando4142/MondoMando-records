@@ -9,6 +9,7 @@
             --neon-pink: #ff007f;
             --neon-cyan: #00f2fe;
             --neon-gold: #ffd700;
+            --neon-green: #22c55e;
             --text-main: #ffffff;
             --text-muted: #8e8e9f;
             --form-bg: rgba(19, 19, 26, 0.85);
@@ -44,8 +45,14 @@
         .card.gold-glow { border-color: var(--neon-gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); }
         h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; }
         
-        .live-ticker-banner { background: black; border: 2px solid var(--neon-pink); border-radius: 8px; padding: 15px; text-align: center; font-size: 20px; letter-spacing: 1px; color: #fff; text-shadow: 0 0 8px var(--neon-pink); animation: neonPulse 1.5s infinite alternate; margin-bottom: 25px; }
+        .live-ticker-banner { background: black; border: 2px solid var(--neon-pink); border-radius: 8px; padding: 15px; text-align: center; font-size: 20px; letter-spacing: 1px; color: #fff; text-shadow: 0 0 8px var(--neon-pink); animation: neonPulse 1.5s infinite alternate; margin-bottom: 15px; }
         @keyframes neonPulse { from { box-shadow: 0 0 10px var(--neon-pink); } to { box-shadow: 0 0 25px var(--neon-pink), inset 0 0 10px var(--neon-pink); } }
+
+        /* NEUER, MARKANTER, NEONGRÜN LEUCHTENDER INFO-BUTTON */
+        .info-link-container { display: flex; justify-content: center; margin-bottom: 25px; }
+        .btn-info-page { background: rgba(34, 197, 94, 0.1); border: 2px solid var(--neon-green); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 30px; font-size: 15px; font-family: sans-serif; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 0 5px var(--neon-green); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); animation: greenPulse 2s infinite alternate; transition: all 0.2s ease; }
+        .btn-info-page:hover { background: var(--neon-green); color: black; text-shadow: none; box-shadow: 0 0 20px var(--neon-green); transform: scale(1.05); }
+        @keyframes greenPulse { from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); } to { box-shadow: 0 0 18px rgba(34, 197, 94, 0.7); } }
 
         .status-container { display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-weight: bold; }
         .badge-live { background-color: var(--neon-pink); color: white; padding: 6px 14px; border-radius: 4px; font-size: 16px; letter-spacing: 1px; box-shadow: 0 0 15px var(--neon-pink); animation: pulse 1.5s infinite; }
@@ -103,6 +110,10 @@
 
             <div class="live-ticker-banner" id="live-ticker">
                 🎵 WAITING FOR TRACK...
+            </div>
+
+            <div class="info-link-container">
+                <a href="/info" class="btn-info-page">📖 Stream-Ablauf & Regeln anzeigen 🟢</a>
             </div>
 
             <div class="card">
@@ -287,7 +298,6 @@
             hitList.innerHTML = '';
             hofList.innerHTML = '';
             
-            // RENDERT DIE AKTUELLEN SHOW HITS
             if(hitSongs.length === 0) {
                 hitList.innerHTML = '<div class="no-hits">Noch keine Playlist-Hits in dieser Show vergeben. Schnapp dir den Status! ⭐</div>';
             } else {
@@ -302,7 +312,6 @@
                 });
             }
 
-            // RENDERT DIE EWIGEN CHAMPIONS (HALL OF FAME)
             if(hallOfFame.length === 0) {
                 hofList.innerHTML = '<div class="no-hits">Noch keine Hall of Fame Champions eingetragen.</div>';
             } else {
