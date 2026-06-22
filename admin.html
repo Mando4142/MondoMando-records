@@ -133,13 +133,25 @@
         } catch(e) {}
     }
 
-    async function startVoting() { await fetch('/api/admin/voting/start', { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
+    async function startVoting() { 
+        await fetch('/api/admin/voting/start', { method: 'POST', headers: {'Authorization': token} }); 
+        alert("🔥 VOTING GESTARTET! Die Zuschauer können jetzt ihre Codes einlösen.");
+        loadAdminQueue(); 
+    }
+    
     async function resolveVoting() { 
         const res = await fetch('/api/admin/voting/resolve', { method: 'POST', headers: {'Authorization': token, 'Content-Type': 'application/json'}, body: "{}" });
         const data = await res.json();
-        if (data.error) alert(data.error);
+        if (data.error) {
+            alert("🚫 " + data.error);
+        } else if (data.tiebreak) {
+            alert("⚠️ GLEICHSTAND! Bitte wähle den Gewinner manuell aus der orangenen Liste.");
+        } else {
+            alert("✅ VOTING BEENDET! Der Gewinner wurde erfolgreich in die ewige Hall of Fame eingetragen.");
+        }
         loadAdminQueue(); 
     }
+    
     async function forceWinner(id) { await fetch('/api/admin/voting/resolve', { method: 'POST', headers: {'Authorization': token, 'Content-Type': 'application/json'}, body: JSON.stringify({ forceWinnerId: id }) }); loadAdminQueue(); }
     
     async function toggleHit(index) { await fetch(`/api/queue/${index}/hit`, { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
