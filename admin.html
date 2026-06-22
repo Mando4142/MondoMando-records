@@ -35,7 +35,7 @@
         .btn-coin-grant { background: var(--neon-gold); color: #000; border: none; padding: 12px 20px; font-family: 'Impact', sans-serif; font-size: 16px; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         .btn-coin-grant:hover { filter: brightness(1.2); }
 
-        /* [UPGRADE 8 & 9] MEILENSTEINE SYSTEM COCKPIT */
+        /* SYSTEM BUTTONS COCKPIT */
         .control-grid { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-control { flex: 1; min-width: 180px; padding: 15px; font-family: 'Impact', sans-serif; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; border: 2px solid var(--neon-cyan); background: rgba(0, 242, 254, 0.1); color: white; border-radius: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 0 10px rgba(0, 242, 254, 0.1); }
         .btn-control:hover { background: var(--neon-cyan); color: black; box-shadow: 0 0 15px var(--neon-cyan); }
@@ -83,7 +83,7 @@
     <div id="admin-lock-screen">
         <div class="login-card">
             <h1 style="font-size:28px; margin-bottom:10px; color:white;">STUDIO ACCESS</h1>
-            <p style="font-family:sans-serif; color:var(--text-muted); margin-bottom:25px; font-size:14px;">Bitte Passwort eingeben, um das Cockpit zu entsperren.</p>
+            <p style="font-family:sans-serif; color:#aaa; margin-bottom:25px; font-size:14px;">Bitte Passwort eingeben, um das Cockpit zu entsperren.</p>
             <input type="password" id="adminPassField" class="login-input" placeholder="Passwort eingeben...">
             <button onclick="checkAdminGate()" class="btn-done" style="width:100%; padding:15px; background:linear-gradient(45deg, var(--neon-pink), #bc005b); border:none; border-radius:8px; color:white; font-family:'Impact', sans-serif; font-size:20px; cursor:pointer; letter-spacing:1px; box-shadow:0 0 15px var(--neon-pink);">COCKPIT ENTSPERREN 🔑</button>
         </div>
@@ -137,7 +137,8 @@
     </div>
 
 <script>
-    const token = "MONDO_STUDIO_CHEF_2026";
+    // NEUES PASSWORT
+    const token = "Sutter1998!";
 
     function checkAdminGate() {
         const pw = document.getElementById('adminPassField').value;
@@ -157,7 +158,6 @@
         setInterval(loadAdminQueue, 4000);
     }
 
-    // Namentliche Coin-Freischaltung ans Backend senden
     async function grantCoinPrivilege(type) {
         const username = document.getElementById(type === 'frosch' ? 'froschUser' : 'djUser').value;
         if(!username) return alert("Bitte Künstlernamen eingeben!");
@@ -180,6 +180,7 @@
             const res = await fetch('/api/queue'); 
             const data = await res.json();
             const queue = data.queue || [];
+            const hallOfFame = data.hallOfFame || [];
             
             const activeList = document.getElementById('admin-active-list');
             const doneList = document.getElementById('admin-done-list');
@@ -208,7 +209,6 @@
             }
             
             const activeSongs = queue.filter(item => !item.isDone);
-            const hitHistorySongs = queue.filter(item => item.status === 'hit');
             
             activeList.innerHTML = '';
             doneList.innerHTML = '';
@@ -216,17 +216,24 @@
             
             if(activeSongs.length === 0) activeList.innerHTML = '<div class="no-songs">Keine offenen Songs in der Warteliste.</div>';
             if(queue.length - activeSongs.length === 0) doneList.innerHTML = '<div class="no-songs">Noch keine Songs bewertet.</div>';
-            if(hitHistorySongs.length === 0) helperList.innerHTML = '<div class="no-songs">Noch keine Playlist-Hits heute vergeben.</div>';
-
-            hitHistorySongs.forEach(item => {
-                helperList.innerHTML += `
-                    <div class="admin-item" style="border-color: var(--neon-gold); padding: 12px 20px; margin-bottom: 8px;">
-                        <div class="song-details">
-                            <h3 style="color: var(--neon-gold); font-size:16px;">🎵 ${item.artist} - ${item.title}</h3>
-                        </div>
-                        <a href="${item.songLink}" target="_blank" class="btn-listen platform-default" style="padding: 8px 15px; font-size:12px;">LINK ÖFFNEN 🔗</a>
-                    </div>`;
-            });
+            
+            // Hall of Fame Liste mit Lösch-Button
+            if(hallOfFame.length === 0) {
+                helperList.innerHTML = '<div class="no-songs">Noch keine Hall of Fame Champions eingetragen.</div>';
+            } else {
+                hallOfFame.forEach((h, idx) => {
+                    helperList.innerHTML += `
+                        <div class="admin-item" style="border-color: var(--neon-gold); padding: 12px 20px; margin-bottom: 8px;">
+                            <div class="song-details">
+                                <h3 style="color: var(--neon-gold); font-size:16px;">👑 ${h.artist} - ${h.title}</h3>
+                                <p style="font-size: 11px; color:#aaa;">Gewonnen: ${h.date} (${h.votes} Votes)</p>
+                            </div>
+                            <div class="actions-flex">
+                                <button class="btn-trash" onclick="killHofFromDb(${idx})">🗑️</button>
+                            </div>
+                        </div>`;
+                });
+            }
 
             queue.forEach((item) => {
                 const min = Math.floor(item.duration / 60); const sec = item.duration % 60;
@@ -288,6 +295,20 @@
     async function fireMilestone(action) { await fetch('/api/admin/milestone', { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': token}, body: JSON.stringify({ action }) }); alert("System-Meilenstein erfolgreich aktiviert! 🎯"); loadAdminQueue(); }
     async function toggleLiveVotingServer() { await fetch('/api/admin/voting', { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
     async function resetQueue() { if(confirm("Möchtest du wirklich ALLE Songs löschen?")) { await fetch('/api/queue/reset', { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); } }
+
+    // Funktion zum Löschen eines Hall of Fame Eintrags
+    async function killHofFromDb(index) {
+        if(confirm("Diesen Champion wirklich für immer aus der Hall of Fame löschen?")) {
+            const res = await fetch(`/api/admin/hof/${index}`, {
+                method: 'DELETE',
+                headers: {'Authorization': token}
+            });
+            if(res.ok) {
+                alert("Eintrag gelöscht! 🗑️");
+                loadAdminQueue();
+            }
+        }
+    }
 </script>
 </body>
 </html>
