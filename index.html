@@ -225,6 +225,29 @@
         return `${day}.${month}.${year}`;
     }
 
+    // --- VOTING LOGIK ---
+    async function castVote(songIndex) {
+        let voterId = localStorage.getItem('mando_voter_id');
+        if (!voterId) {
+            voterId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('mando_voter_id', voterId);
+        }
+
+        const res = await fetch('/api/vote', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ songIndex: songIndex, voterId: voterId }) 
+        });
+        
+        const result = await res.json();
+        if (res.ok) {
+            alert("✅ Deine Stimme wurde gezählt!");
+            loadQueue();
+        } else {
+            alert("❌ " + result.error);
+        }
+    }
+
     function renderCalendar() {
         const year = calDate.getFullYear(); const month = calDate.getMonth();
         document.getElementById('cal-month-year').innerText = new Date(year, month).toLocaleString('de-CH', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -278,9 +301,19 @@
                 timeLeftPot.innerText = "SYSTEM OFFLINE"; timeLeftPot.className = "time-urgent";
             } else if (data.votingActive) {
                 formContainer.style.display = 'none'; offlineMsg.style.display = 'none'; votingContainer.style.display = 'block'; mainTitle.style.display = 'none';
-                const hits = []; queue.forEach((s, index) => { if(s.isHit) hits.push({ ...s, originalIndex: index }); });
-                let voteHtml = `<h2>🗳️ WÄHLE DEN HIT DES TAGES! 🗳️</h2>`;
-                hits.forEach(h => { voteHtml += `<div class="queue-item is-playlist-hit"><div><b>${h.artist}</b> - ${h.title}</div><button class="btn-vote" onclick="castVote(${h.originalIndex})">VOTE 🗳 Mini</button></div>`; });
+                
+                let voteHtml = `<h2>🗳️ VOTE FÜR DEN HIT!</h2>`;
+                queue.forEach((s, index) => { 
+                    if(s.isHit) {
+                        const stimmen = (data.votes && data.votes[index]) ? data.votes[index].length : 0;
+                        voteHtml += `
+                            <div class="queue-item is-playlist-hit">
+                                <div><b>${s.artist}</b> - ${s.title}<br>
+                                <small style="color:var(--text-muted)">Stimmen: ${stimmen}</small></div>
+                                <button class="btn-vote" onclick="castVote(${index})">VOTE 🗳️</button>
+                            </div>`;
+                    }
+                });
                 votingContainer.innerHTML = voteHtml;
             } else {
                 votingContainer.style.display = 'none';
@@ -379,8 +412,6 @@
             document.getElementById('songForm').reset(); loadQueue();
         }
     }
-
-    async function castVote(id) { await fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ songIndex: id }) }); alert("Stimme gezählt! 🗳️"); }
     
     function updateCountdown() {
         const now = new Date(); const currentDay = now.getDay(); const currentHour = now.getHours(); const currentMin = now.getMinutes();
