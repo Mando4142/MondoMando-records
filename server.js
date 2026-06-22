@@ -11,14 +11,11 @@ app.use(express.static(path.join(__dirname)));
 const DB_FILE = path.join(__dirname, 'database.json');
 let dbData = {
     songQueue: [],
-    usedJokers: [],
-    overtimeActive: false,
     extraTimeMinutes: 0,
-    tripleSongUnlocked: false,
     votingActive: false,
     votes: {},
     hallOfFame: [],
-    historicalHits: {}, // NEU: Archiv für die Hit Playlist
+    historicalHits: {}, 
     systemOnline: true
 };
 
@@ -26,7 +23,7 @@ if (fs.existsSync(DB_FILE)) {
     try { 
         const loadedData = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); 
         dbData = { ...dbData, ...loadedData };
-        if (!dbData.historicalHits) dbData.historicalHits = {}; // Sicherheitshalber anlegen
+        if (!dbData.historicalHits) dbData.historicalHits = {}; 
     } catch (e) { console.log("DB initialisiert."); }
 }
 
@@ -55,7 +52,6 @@ function checkAdminAuth(req, res, next) {
     }
 }
 
-// Hilfsfunktion für ein exaktes Schweizer Datum (DD.MM.YYYY)
 function getSwissDateString(d) {
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -86,12 +82,11 @@ app.get('/api/queue', (req, res) => {
         remainingSeconds: remainingSecondsTotal % 60,
         remainingSecondsTotal: remainingSecondsTotal,
         submissionsOpen: totalSeconds < maxSeconds,
-        overtimeActive: dbData.overtimeActive,
         maxMinutesAllowed: allowedMinutes,
         votingActive: dbData.votingActive,
         votes: dbData.votes,
         hallOfFame: dbData.hallOfFame,
-        historicalHits: dbData.historicalHits, // Gibt das Archiv ans Frontend
+        historicalHits: dbData.historicalHits,
         systemOnline: dbData.systemOnline !== false
     });
 });
@@ -101,7 +96,7 @@ app.post('/api/submit', (req, res) => {
         return res.status(400).json({ error: "Das Einreicheformular ist aktuell offline!" });
     }
 
-    const { artist, title, duration, genre, songLink, isJoker } = req.body;
+    const { artist, title, duration, genre, songLink } = req.body;
     
     if (["Schlager", "Hardstyle", "Hardcore", "Metal"].includes(genre)) {
         return res.status(400).json({ error: "Dieses Genre verletzt Mondos Ohren!" });
@@ -111,36 +106,16 @@ app.post('/api/submit', (req, res) => {
     const allowedMinutes = BASE_LIMIT_MINUTES + dbData.extraTimeMinutes;
     const maxSeconds = allowedMinutes * 60;
 
-    if (totalSeconds >= maxSeconds && !isJoker) {
+    if (totalSeconds >= maxSeconds) {
         return res.status(400).json({ error: "Das Sendezeit-Limit dieser Show ist komplett erreicht!" });
-    }
-
-    let jokerApplied = false;
-    if (isJoker) {
-        const cleanUser = artist.trim().toLowerCase();
-        if (dbData.usedJokers.includes(cleanUser)) {
-            return res.status(400).json({ error: "Du hast deinen Stammzuschauer-Joker diesen Monat bereits eingelöst!" });
-        }
-        dbData.usedJokers.push(cleanUser);
-        jokerApplied = true;
     }
 
     const newSong = {
         artist, title, duration: parseInt(duration) || 0, genre, songLink,
-        isHit: false, isDone: false, isJoker: jokerApplied, timestamp: Date.now()
+        isHit: false, isDone: false, timestamp: Date.now()
     };
 
-    if (jokerApplied) {
-        const currentActiveIndex = dbData.songQueue.findIndex(s => !s.isDone);
-        if (currentActiveIndex === -1) {
-            dbData.songQueue.push(newSong);
-        } else {
-            dbData.songQueue.splice(currentActiveIndex + 1, 0, newSong);
-        }
-    } else {
-        dbData.songQueue.push(newSong);
-    }
-
+    dbData.songQueue.push(newSong);
     saveToDB();
     res.json({ success: true });
 });
@@ -164,7 +139,6 @@ app.post('/api/queue/:index/hit', checkAdminAuth, (req, res) => {
         const song = dbData.songQueue[index];
         song.isHit = !song.isHit;
         
-        // NEU: Vollautomatisches Speichern im Hit-Archiv nach Datum
         const dateStr = getSwissDateString(new Date());
         if (!dbData.historicalHits) dbData.historicalHits = {};
         if (!dbData.historicalHits[dateStr]) dbData.historicalHits[dateStr] = [];
@@ -200,12 +174,11 @@ app.delete('/api/queue/:index', checkAdminAuth, (req, res) => {
         saveToDB();
         res.json({ success: true });
     } else res.status(400).json({ error: "Index Fehler" });
-});
+});https://github.com/Mando4142/MondoMando-records/blob/main/server.js
 
 app.post('/api/admin/overtime', checkAdminAuth, (req, res) => {
     const { minutes } = req.body;
     dbData.extraTimeMinutes = (dbData.extraTimeMinutes || 0) + (parseFloat(minutes) || 0);
-    dbData.overtimeActive = dbData.extraTimeMinutes > 0;
     saveToDB();
     res.json({ success: true, maxMinutesAllowed: BASE_LIMIT_MINUTES + dbData.extraTimeMinutes });
 });
@@ -223,20 +196,6 @@ app.post('/api/vote', (req, res) => {
     dbData.votes[songIndex] = (dbData.votes[songIndex] || 0) + 1;
     saveToDB();
     res.json({ success: true });
-});
-
-app.post('/api/admin/close-voting-champion', checkAdminAuth, (req, res) => {
-    dbData.votingActive = false;
-    let winnerIndex = -1; let maxVotes = -1;
-    Object.keys(dbData.votes).forEach(idx => {
-        if (dbData.votes[idx] > maxVotes) { maxVotes = dbData.votes[idx]; winnerIndex = parseInt(idx); }
-    });
-    if (winnerIndex !== -1 && dbData.songQueue[winnerIndex]) {
-        const champ = dbData.songQueue[winnerIndex];
-        dbData.hallOfFame.push({ artist: champ.artist, title: champ.title, votes: maxVotes, date: new Date().toLocaleDateString('de-CH') });
-    }
-    saveToDB();
-    res.json({ success: true, hallOfFame: dbData.hallOfFame });
 });
 
 app.delete('/api/admin/halloffame/:index', checkAdminAuth, (req, res) => {
