@@ -95,6 +95,7 @@
     <div class="studio-background"></div>
     <div class="overlay-container">
         <div class="interface-content">
+            
             <div class="stream-time-box-fixed">
                 ⏰ JEDEN SONNTAG AB <span style="color: var(--neon-gold); text-shadow: 0 0 10px var(--neon-gold), 0 0 20px var(--neon-gold);">19:00 UHR</span> LIVE!
             </div>
@@ -124,6 +125,13 @@
 
             <div id="dynamic-main-card" class="card pink-glow">
                 <h2>SONG EINREICHEN</h2>
+                
+                <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 20px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6); text-shadow: 0 0 10px rgba(255,0,127,0.5);">
+                    <div style="font-size: 40px; margin-bottom: 15px;">🚫</div>
+                    Das Einreicheformular ist aktuell noch nicht verfügbar.<br><br>
+                    <span style="font-family: sans-serif; font-size: 16px; color: white; text-shadow: none;">Bitte warte auf den offiziellen Start des Streams!</span>
+                </div>
+
                 <form id="songForm" onsubmit="addSongToServer(event)">
                     <div class="form-group">
                         <label for="artistName">Künstlername</label>
@@ -240,34 +248,48 @@
                 ticker.innerText = `🎵 MONDO MANDO RECORDS -- WARTE AUF TRACKS`;
             }
 
-            if (!data.submissionsOpen && data.overtimeOpen) {
-                document.getElementById('time-left-pot').innerHTML = "<span style='color:var(--neon-pink)'>STANDARD VOLL! 🐸 Nutze Frosch!</span>";
-                submitBtn.disabled = false;
-                submitBtn.innerText = "SONG EINSENDEN (OVERTIME)";
-                submitBtn.style.opacity = "1";
-                submitBtn.style.background = "";
-            } else if (!data.submissionsOpen && !data.overtimeOpen) {
-                document.getElementById('time-left-pot').innerText = "VOLL / GESPERRT";
+            // NEU: Steuerung des Offline-Modus Formulars
+            const formEl = document.getElementById('songForm');
+            const offlineMsg = document.getElementById('offline-message');
+
+            if (data.systemOnline === false) {
+                formEl.style.display = 'none';
+                offlineMsg.style.display = 'block';
+                document.getElementById('time-left-pot').innerText = "SYSTEM OFFLINE";
                 document.getElementById('time-left-pot').className = "time-urgent";
-                submitBtn.disabled = true;
-                submitBtn.innerText = "LIMIT ERREICHT! GESPERRT 🔒";
-                submitBtn.style.opacity = "0.4";
-                submitBtn.style.background = "#444";
-                submitBtn.style.boxShadow = "none";
-                submitBtn.style.animation = "none";
             } else {
-                const secFormatted = data.remainingSeconds < 10 ? '0' + data.remainingSeconds : data.remainingSeconds;
-                document.getElementById('time-left-pot').innerText = `${data.remainingMinutes} Min. ${secFormatted} Sek.`;
-                document.getElementById('time-left-pot').className = "time-highlight";
-                submitBtn.disabled = false;
-                submitBtn.innerText = "SONG EINSENDEN";
-                submitBtn.style.opacity = "1";
-                submitBtn.style.background = "";
+                formEl.style.display = 'block';
+                offlineMsg.style.display = 'none';
+
+                if (!data.submissionsOpen && data.overtimeOpen) {
+                    document.getElementById('time-left-pot').innerHTML = "<span style='color:var(--neon-pink)'>STANDARD VOLL! 🐸 Nutze Frosch!</span>";
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "SONG EINSENDEN (OVERTIME)";
+                    submitBtn.style.opacity = "1";
+                    submitBtn.style.background = "";
+                } else if (!data.submissionsOpen && !data.overtimeOpen) {
+                    document.getElementById('time-left-pot').innerText = "VOLL / GESPERRT";
+                    document.getElementById('time-left-pot').className = "time-urgent";
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "LIMIT ERREICHT! GESPERRT 🔒";
+                    submitBtn.style.opacity = "0.4";
+                    submitBtn.style.background = "#444";
+                    submitBtn.style.boxShadow = "none";
+                    submitBtn.style.animation = "none";
+                } else {
+                    const secFormatted = data.remainingSeconds < 10 ? '0' + data.remainingSeconds : data.remainingSeconds;
+                    document.getElementById('time-left-pot').innerText = `${data.remainingMinutes} Min. ${secFormatted} Sek.`;
+                    document.getElementById('time-left-pot').className = "time-highlight";
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "SONG EINSENDEN";
+                    submitBtn.style.opacity = "1";
+                    submitBtn.style.background = "";
+                }
             }
             
             document.getElementById('estimated-wait').innerText = data.spentFormatted;
 
-            if (data.votingActive) {
+            if (data.votingActive && data.systemOnline !== false) {
                 const hits = queue.filter(s => s.isHit);
                 let voteHtml = `<h2>🗳️ WÄHLE DEN HIT DES TAGES! 🗳️</h2><p style="font-family:sans-serif; font-size:14px; margin-bottom:15px;">Stimme jetzt live für deinen Favoriten ab:</p>`;
                 if(hits.length === 0) {
@@ -281,6 +303,11 @@
                         </div>`;
                 });
                 mainCard.innerHTML = voteHtml;
+            } else if (data.systemOnline !== false && formEl.style.display === 'none' && !data.votingActive) {
+                // Stellt sicher, dass das Formular nach dem Voting wieder auftaucht
+                mainCard.innerHTML = `<h2>SONG EINREICHEN</h2>`;
+                mainCard.appendChild(offlineMsg);
+                mainCard.appendChild(formEl);
             }
 
             const hitSongs = queue.filter(item => item.isHit);
