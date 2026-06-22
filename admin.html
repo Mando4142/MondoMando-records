@@ -61,12 +61,13 @@
                 <div class="admin-time-box" style="flex-direction:column; gap:10px;">
                     <div style="display:flex; justify-content:space-between;">
                         <span>SHOW-ZEIT BELEBT: <span id="admin-total-time" class="time-value">0 Min. 00 Sek.</span></span>
-                        <span id="admin-form-status">🟢 FORMULAR GEÖFFNET</span>
+                        <span id="admin-form-status">🟢 LÄDT STATUS...</span>
                     </div>
                     <div style="display:flex; gap:10px; margin-top:5px; flex-wrap: wrap;">
+                        <button id="btn-system-toggle" class="btn-control" onclick="toggleSystem()">🔄 LÄDT...</button>
+                        
                         <button class="btn-control" style="background: var(--neon-cyan); color: black;" onclick="addExactSlots(2)">⚡ 50K LIKES: +2 PLÄTZE</button>
                         <button class="btn-control" onclick="setOvertime(15)">🐸 FROSCH OVERTIME (+15 MIN)</button>
-                        <button class="btn-control" onclick="setOvertime(30)">🐸 MAX OVERTIME (+30 MIN)</button>
                         <button class="btn-control" style="background:var(--neon-gold); color:black;" onclick="toggleVoting()">🏆 LIVE-VOTING START/STOP</button>
                         <button class="btn-control" style="background:#22c55e;" onclick="closeVotingAndSelectChamp()">👑 CHAMP KREIEREN</button>
                     </div>
@@ -110,8 +111,22 @@
             const hof = data.hallOfFame || [];
             
             document.getElementById('admin-total-time').innerText = data.spentFormatted;
+            
+            // NEU: Logik für den Master-Schalter und Status-Text
+            const btnSystem = document.getElementById('btn-system-toggle');
             const statusText = document.getElementById('admin-form-status');
-            statusText.innerText = data.submissionsOpen ? "🟢 FORMULAR GEÖFFNET" : "🔴 LIMIT ERREICHT (GESPERRT)";
+            
+            if (data.systemOnline === false) {
+                btnSystem.innerText = "🟢 SYSTEM ONLINE SCHALTEN";
+                btnSystem.style.background = "#22c55e"; // Grün
+                btnSystem.style.color = "white";
+                statusText.innerText = "🔴 SYSTEM OFFLINE GESPERRT";
+            } else {
+                btnSystem.innerText = "🔴 SYSTEM OFFLINE SCHALTEN";
+                btnSystem.style.background = "#ef4444"; // Rot
+                btnSystem.style.color = "white";
+                statusText.innerText = data.submissionsOpen ? "🟢 FORMULAR GEÖFFNET" : "🔴 LIMIT ERREICHT (GESPERRT)";
+            }
             
             const activeList = document.getElementById('admin-active-list');
             const doneList = document.getElementById('admin-done-list');
@@ -120,7 +135,6 @@
             
             activeList.innerHTML = ''; doneList.innerHTML = ''; hofList.innerHTML = '';
 
-            // Render Hall of Fame
             if(hof.length === 0) { hofList.innerHTML = '<div class="no-songs">Noch keine Champions in der Liste.</div>'; }
             hof.forEach((c, hIndex) => {
                 hofList.innerHTML += `
@@ -175,34 +189,29 @@
         } catch(e) { console.log(e); }
     }
 
+    // NEU: Master-Schalter Funktion
+    async function toggleSystem() {
+        await fetch('/api/admin/toggle-system', { method: 'POST', headers: {'Authorization': token} });
+        loadAdminQueue();
+    }
+
     async function addExactSlots(slots) {
         const minutesToAdd = slots * 6; 
-        await fetch('/api/admin/overtime', { 
-            method: 'POST', 
-            headers: {'Authorization': token, 'Content-Type':'application/json'}, 
-            body: JSON.stringify({ minutes: minutesToAdd }) 
-        }); 
+        await fetch('/api/admin/overtime', { method: 'POST', headers: {'Authorization': token, 'Content-Type':'application/json'}, body: JSON.stringify({ minutes: minutesToAdd }) }); 
         loadAdminQueue(); 
         alert(`⚡ Meilenstein erreicht: ${slots} Plätze freigeschaltet (+${minutesToAdd} Min. Limit)!`);
     }
 
     async function deleteChampion(hIndex) {
         if(confirm("Möchtest du diesen Champion wirklich aus der Hall of Fame löschen?")) {
-            await fetch(`/api/admin/halloffame/${hIndex}`, {
-                method: 'DELETE',
-                headers: {'Authorization': token}
-            });
-            loadAdminQueue();
+            await fetch(`/api/admin/halloffame/${hIndex}`, { method: 'DELETE', headers: {'Authorization': token} }); loadAdminQueue();
         }
     }
 
     async function toggleHit(index) { await fetch(`/api/queue/${index}/hit`, { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
     async function toggleDone(index) { await fetch(`/api/queue/${index}/done`, { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
     async function trashSong(index) { 
-        if(confirm("Song permanent löschen und Sendezeit wieder freigeben?")) {
-            await fetch(`/api/queue/${index}`, { method: 'DELETE', headers: {'Authorization': token} }); 
-            loadAdminQueue(); 
-        } 
+        if(confirm("Song permanent löschen und Sendezeit wieder freigeben?")) { await fetch(`/api/queue/${index}`, { method: 'DELETE', headers: {'Authorization': token} }); loadAdminQueue(); } 
     }
     async function setOvertime(min) { await fetch('/api/admin/overtime', { method: 'POST', headers: {'Authorization': token, 'Content-Type':'application/json'}, body: JSON.stringify({ minutes: min }) }); loadAdminQueue(); }
     async function toggleVoting() { await fetch('/api/admin/toggle-voting', { method: 'POST', headers: {'Authorization': token} }); alert("Voting-Status geändert!"); }
