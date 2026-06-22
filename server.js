@@ -8,7 +8,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
-// --- DATEN-FUNDAMENT ---
 const DB_FILE = path.join(__dirname, 'database.json');
 let dbData = {
     songQueue: [],
@@ -18,9 +17,7 @@ let dbData = {
     tripleSongUnlocked: false,
     votingActive: false,
     votes: {},
-    hallOfFame: [],
-    allowedFroschUser: "",
-    allowedDjUser: ""
+    hallOfFame: []
 };
 
 if (fs.existsSync(DB_FILE)) {
@@ -32,11 +29,8 @@ function saveToDB() {
 }
 
 const BASE_LIMIT_MINUTES = 90;
-const MAX_OVERTIME_MINUTES = 30;
 const FEEDBACK_BUFFER_SECONDS = 120;
-
-// NEUES PASSWORT HIER HINTERLEGT
-const ADMIN_PASSWORD = "Sutter1998!";
+const ADMIN_PASSWORD = "MONDO_STUDIO_CHEF_2026";
 
 function getTotalTimeSeconds() {
     let total = 0;
@@ -48,12 +42,16 @@ function getTotalTimeSeconds() {
 
 function checkAdminAuth(req, res, next) {
     const authHeader = req.headers['authorization'];
-    if (authHeader === ADMIN_PASSWORD) { next(); } else { res.status(401).json({ error: "Unbefugter Zugriff!" }); }
+    if (authHeader === ADMIN_PASSWORD) {
+        next();
+    } else {
+        res.status(401).json({ error: "Unbefugter Zugriff!" });
+    }
 }
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
-app.get('/info', (req, res) => res.sendFile(path.join(__dirname, 'info.html')));
+app.get('/regeln', (req, res) => res.sendFile(path.join(__dirname, 'regeln.html')));
 
 app.get('/api/queue', (req, res) => {
     const totalSeconds = getTotalTimeSeconds();
@@ -61,11 +59,11 @@ app.get('/api/queue', (req, res) => {
     const maxSeconds = allowedMinutes * 60;
     const remainingSecondsTotal = Math.max(0, maxSeconds - totalSeconds);
     
-    const processedQueue = dbData.songQueue.map((song, idx) => {
+    const processedQueue = dbData.songQueue.map(song => {
         let platform = 'other';
         if (/spotify\.com/i.test(song.songLink)) platform = 'spotify';
         else if (/youtube\.com|youtu\.be/i.test(song.songLink)) platform = 'youtube';
-        return { ...song, id: idx, platform };
+        return { ...song, platform };
     });
 
     res.json({
@@ -73,103 +71,71 @@ app.get('/api/queue', (req, res) => {
         remainingMinutes: Math.floor(remainingSecondsTotal / 60),
         remainingSeconds: remainingSecondsTotal % 60,
         remainingSecondsTotal: remainingSecondsTotal,
-        spentFormatted: `${Math.floor(totalSeconds / 60)} Min. ${totalSeconds % 60 < 10 ? '0' : ''}${totalSeconds % 60} Sek.`,
+        spentFormatted: `${Math.floor(totalSeconds / 60)} Min. ${totalSeconds % 60} Sek.`,
         submissionsOpen: totalSeconds < maxSeconds,
-        overtimeOpen: dbData.extraTimeMinutes < MAX_OVERTIME_MINUTES,
+        overtimeActive: dbData.overtimeActive,
+        maxMinutesAllowed: allowedMinutes,
         votingActive: dbData.votingActive,
+        votes: dbData.votes,
         hallOfFame: dbData.hallOfFame
     });
 });
 
 app.post('/api/submit', (req, res) => {
-    const { artist, title, duration, genre, songLink, isVipJoker } = req.body;
-    const cleanArtist = artist.trim().toLowerCase();
+    const { artist, title, duration, genre, songLink, isJoker } = req.body;
     
     if (["Schlager", "Hardstyle", "Hardcore", "Metal"].includes(genre)) {
         return res.status(400).json({ error: "Dieses Genre verletzt Mondos Ohren!" });
-    }
-
-    const existingSongsCount = dbData.songQueue.filter(s => s.artist.trim().toLowerCase() === cleanArtist && !s.isDone).length;
-
-    let hasDjPermission = (dbData.allowedDjUser !== "" && dbData.allowedDjUser.toLowerCase() === cleanArtist);
-    let maxAllowedSongsForUser = hasDjPermission ? 3 : 2;
-
-    if (existingSongsCount >= maxAllowedSongsForUser) {
-        return res.status(400).json({ error: hasDjPermission ? "Du hast dein DJ-Set Limit von 3 Songs bereits erreicht!" : "Maximal 2 aktive Songs erlaubt! Gönn den anderen auch mal." });
     }
 
     const totalSeconds = getTotalTimeSeconds();
     const allowedMinutes = BASE_LIMIT_MINUTES + dbData.extraTimeMinutes;
     const maxSeconds = allowedMinutes * 60;
 
-    let hasFroschPermission = (dbData.allowedFroschUser !== "" && dbData.allowedFroschUser.toLowerCase() === cleanArtist);
-    
-    if (totalSeconds >= maxSeconds && !isVipJoker && !hasFroschPermission) {
-        return res.status(400).json({ error: "Die Show ist voll! Nur noch freigegebene Frosch-Tickets kommen rein." });
+    if (totalSeconds >= maxSeconds && !isJoker) {
+        return res.status(400).json({ error: "Das Sendezeit-Limit dieser Show ist komplett erreicht!" });
     }
 
     let jokerApplied = false;
-    if (isVipJoker) {
-        if (dbData.usedJokers.includes(cleanArtist)) {
+    if (isJoker) {
+        const cleanUser = artist.trim().toLowerCase();
+        if (dbData.usedJokers.includes(cleanUser)) {
             return res.status(400).json({ error: "Du hast deinen Stammzuschauer-Joker diesen Monat bereits eingelöst!" });
         }
-        dbData.usedJokers.push(cleanArtist);
+        dbData.usedJokers.push(cleanUser);
         jokerApplied = true;
     }
 
     const newSong = {
-        artist: artist.trim(), title: title.trim(), duration: parseInt(duration) || 0, genre, songLink,
-        status: '', isHit: false, isDone: false, isJoker: jokerApplied, timestamp: Date.now()
+        artist, title, duration: parseInt(duration) || 0, genre, songLink,
+        isHit: false, isDone: false, isJoker: jokerApplied, timestamp: Date.now()
     };
 
-    if (jokerApplied || hasFroschPermission) {
+    if (jokerApplied) {
         const currentActiveIndex = dbData.songQueue.findIndex(s => !s.isDone);
         if (currentActiveIndex === -1) {
             dbData.songQueue.push(newSong);
         } else {
             dbData.songQueue.splice(currentActiveIndex + 1, 0, newSong);
         }
-        if (hasFroschPermission) dbData.allowedFroschUser = ""; 
     } else {
         dbData.songQueue.push(newSong);
-    }
-
-    if (hasDjPermission && (existingSongsCount + 1) === 3) {
-        dbData.allowedDjUser = "";
     }
 
     saveToDB();
     res.json({ success: true });
 });
 
-// --- ADMIN ENDPOINTS ---
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/auth', (req, res) => {
     const { password } = req.body;
-    if (password === ADMIN_PASSWORD) res.json({ success: true }); else res.status(401).json({ error: "Falsches Passwort!" });
+    if (password === ADMIN_PASSWORD) res.json({ success: true });
+    else res.status(401).json({ error: "Falsches Passwort!" });
 });
 
-app.post('/api/admin/set-coin-user', checkAdminAuth, (req, res) => {
-    const { type, username } = req.body;
-    const cleanName = username.trim();
-    
-    if (type === 'frosch') {
-        dbData.allowedFroschUser = cleanName;
-        dbData.extraTimeMinutes = Math.min(dbData.extraTimeMinutes + 10, MAX_OVERTIME_MINUTES);
-        dbData.overtimeActive = true;
-    }
-    if (type === 'dj') {
-        dbData.allowedDjUser = cleanName;
-    }
-    saveToDB();
-    res.json({ success: true, allowedFrosch: dbData.allowedFroschUser, allowedDj: dbData.allowedDjUser });
-});
-
-app.post('/api/queue/:index/status', checkAdminAuth, (req, res) => {
+app.post('/api/queue/:index/hit', checkAdminAuth, (req, res) => {
     const index = parseInt(req.params.index);
-    const { status } = req.body;
     if (dbData.songQueue[index]) {
-        dbData.songQueue[index].status = status;
-        dbData.songQueue[index].isHit = (status === 'hit');
+        dbData.songQueue[index].isHit = !dbData.songQueue[index].isHit;
         saveToDB();
         res.json({ success: true });
     } else res.status(400).json({ error: "Index Fehler" });
@@ -193,45 +159,60 @@ app.delete('/api/queue/:index', checkAdminAuth, (req, res) => {
     } else res.status(400).json({ error: "Index Fehler" });
 });
 
-app.delete('/api/admin/hof/:index', checkAdminAuth, (req, res) => {
+app.post('/api/admin/overtime', checkAdminAuth, (req, res) => {
+    const { minutes } = req.body;
+    dbData.extraTimeMinutes = (dbData.extraTimeMinutes || 0) + (parseFloat(minutes) || 0);
+    dbData.overtimeActive = dbData.extraTimeMinutes > 0;
+    saveToDB();
+    res.json({ success: true, maxMinutesAllowed: BASE_LIMIT_MINUTES + dbData.extraTimeMinutes });
+});
+
+app.post('/api/admin/toggle-voting', checkAdminAuth, (req, res) => {
+    dbData.votingActive = !dbData.votingActive;
+    if (dbData.votingActive) dbData.votes = {};
+    saveToDB();
+    res.json({ success: true, votingActive: dbData.votingActive });
+});
+https://github.com/Mando4142/mondomando-studio/blob/main/server.js
+app.post('/api/vote', (req, res) => {
+    if (!dbData.votingActive) return res.status(400).json({ error: "Voting geschlossen!" });
+    const { songIndex } = req.body;
+    dbData.votes[songIndex] = (dbData.votes[songIndex] || 0) + 1;
+    saveToDB();
+    res.json({ success: true });
+});
+
+app.post('/api/admin/close-voting-champion', checkAdminAuth, (req, res) => {
+    dbData.votingActive = false;
+    let winnerIndex = -1; let maxVotes = -1;
+    Object.keys(dbData.votes).forEach(idx => {
+        if (dbData.votes[idx] > maxVotes) { maxVotes = dbData.votes[idx]; winnerIndex = parseInt(idx); }
+    });
+    if (winnerIndex !== -1 && dbData.songQueue[winnerIndex]) {
+        const champ = dbData.songQueue[winnerIndex];
+        dbData.hallOfFame.push({ artist: champ.artist, title: champ.title, votes: maxVotes, date: new Date().toLocaleDateString('de-CH') });
+    }
+    saveToDB();
+    res.json({ success: true, hallOfFame: dbData.hallOfFame });
+});
+
+// NEU: Einzelnen Eintrag aus der Hall of Fame löschen
+app.delete('/api/admin/halloffame/:index', checkAdminAuth, (req, res) => {
     const index = parseInt(req.params.index);
     if (dbData.hallOfFame && dbData.hallOfFame[index]) {
         dbData.hallOfFame.splice(index, 1);
         saveToDB();
-        res.json({ success: true });
+        res.json({ success: true, hallOfFame: dbData.hallOfFame });
     } else {
-        res.status(400).json({ error: "Hall of Fame Index Fehler" });
+        res.status(400).json({ error: "Champion Index nicht gefunden" });
     }
 });
 
-app.post('/api/admin/voting', checkAdminAuth, (req, res) => {
-    dbData.votingActive = !dbData.votingActive;
-    if (!dbData.votingActive) {
-        let winnerIndex = -1; let maxVotes = -1;
-        Object.keys(dbData.votes).forEach(idx => {
-            if (dbData.votes[idx] > maxVotes) { maxVotes = dbData.votes[idx]; winnerIndex = parseInt(idx); }
-        });
-        if (winnerIndex !== -1 && dbData.songQueue[winnerIndex] && maxVotes > 0) {
-            const champ = dbData.songQueue[winnerIndex];
-            dbData.hallOfFame.push({ artist: champ.artist, title: champ.title, votes: maxVotes, date: new Date().toLocaleDateString('de-CH') });
-        }
-    } else { dbData.votes = {}; }
-    saveToDB();
-    res.json({ success: true, votingActive: dbData.votingActive });
-});
-
-app.post('/api/queue/:index/vote', (req, res) => {
-    if (!dbData.votingActive) return res.status(400).json({ error: "Voting geschlossen!" });
-    const index = parseInt(req.params.index);
-    dbData.votes[index] = (dbData.votes[index] || 0) + 1;
-    saveToDB();
-    res.json({ success: true });
-});
-
 app.post('/api/queue/reset', checkAdminAuth, (req, res) => {
-    dbData.songQueue = []; dbData.votes = {}; dbData.votingActive = false; dbData.extraTimeMinutes = 0; dbData.overtimeActive = false; dbData.allowedFroschUser = ""; dbData.allowedDjUser = "";
+    dbData.songQueue = []; dbData.votes = {}; dbData.votingActive = false;
     saveToDB();
     res.json({ success: true });
 });
 
-app.listen(PORT, () => { console.log(`🚀 MONDO MANDO STUDIO SERVER LÄUFT AUF PORT ${PORT}`); });
+// Name im Server-Start aktualisiert auf Records
+app.listen(PORT, () => { console.log(`🚀 MONDO MANDO RECORDS RUNNING ON PORT ${PORT}`); });
