@@ -78,6 +78,9 @@
                 <div class="section-title" style="color: var(--neon-gold);">🏆 Live-Voting Champions (Hall of Fame)</div>
                 <div id="admin-hof-list" style="margin-bottom: 20px;"></div>
 
+                <div class="section-title" style="color: var(--neon-gold);">⭐ Heutige Hits (Für Spotify/YouTube Export)</div>
+                <div id="admin-hit-export-list" style="margin-bottom: 20px;"></div>
+
                 <div class="section-title" style="color: var(--neon-cyan);">Offene Einsendungen 🔥</div>
                 <div id="admin-active-list"></div>
 
@@ -143,11 +146,14 @@
             const activeList = document.getElementById('admin-active-list');
             const doneList = document.getElementById('admin-done-list');
             const hofList = document.getElementById('admin-hof-list');
+            const hitExportList = document.getElementById('admin-hit-export-list');
+            
             const activeSongs = queue.filter(item => !item.isDone);
             
-            activeList.innerHTML = ''; doneList.innerHTML = ''; hofList.innerHTML = '';
+            activeList.innerHTML = ''; doneList.innerHTML = ''; hofList.innerHTML = ''; hitExportList.innerHTML = '';
 
-            if(hof.length === 0) { hofList.innerHTML = '<div class="no-songs">Noch keine Champions in der Liste.</div>'; }
+            // 1. Hall of Fame rendern
+            if(hof.length === 0) { hofList.innerHTML = '<div style="color:#8e8e9f; font-family:sans-serif; text-align:center; padding: 10px;">Noch keine Champions in der Liste.</div>'; }
             hof.forEach((c, hIndex) => {
                 hofList.innerHTML += `
                     <div class="admin-item" style="border-color: var(--neon-gold); padding: 12px 20px;">
@@ -161,6 +167,29 @@
                     </div>`;
             });
 
+            // 2. NEU: Hit Export Liste rendern (Alle Songs der Session, die isHit === true haben)
+            const hitSongs = queue.filter(item => item.isHit);
+            if(hitSongs.length === 0) {
+                hitExportList.innerHTML = '<div style="color:#8e8e9f; font-family:sans-serif; text-align:center; padding: 10px;">Noch keine Tracks als Hit markiert.</div>';
+            } else {
+                hitSongs.forEach(item => {
+                    let iconHtml = `<span class="link-icon icon-text">LINK</span>`;
+                    if(item.platform === 'spotify') iconHtml = `<span class="link-icon icon-spotify">🟢 SPOTIFY</span>`;
+                    if(item.platform === 'youtube') iconHtml = `<span class="link-icon icon-youtube">🔴 YOUTUBE</span>`;
+                    
+                    hitExportList.innerHTML += `
+                        <div class="admin-item" style="border-color: var(--neon-gold); padding: 12px 20px;">
+                            <div class="song-details">
+                                <h3 style="color: var(--neon-gold);">⭐ ${item.artist} - ${item.title}</h3>
+                            </div>
+                            <div class="actions-flex">
+                                <a href="${item.songLink}" target="_blank">${iconHtml}</a>
+                            </div>
+                        </div>`;
+                });
+            }
+
+            // 3. Aktive Songs & Historie rendern
             queue.forEach((item, index) => {
                 const min = Math.floor(item.duration / 60); const sec = item.duration % 60;
                 
@@ -187,12 +216,14 @@
                             </div>
                         </div>`;
                 } else {
+                    // WIEDERHERGESTELLT: Links auch in der Erledigt-Liste anzeigen
                     doneList.innerHTML += `
                         <div class="admin-item is-done-admin">
                             <div class="song-details">
                                 <h3>${item.artist} - ${item.title}</h3>
                             </div>
                             <div class="actions-flex">
+                                <a href="${item.songLink}" target="_blank">${iconHtml}</a>
                                 <button class="btn-control" onclick="toggleDone(${index})">↩</button>
                             </div>
                         </div>`;
