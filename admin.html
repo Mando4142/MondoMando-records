@@ -71,9 +71,7 @@
 
                     <div style="display:flex; gap:10px; margin-top:5px; flex-wrap: wrap;">
                         <button class="btn-control" style="background: var(--neon-cyan); color: black;" onclick="addExactSlots(2)">⚡ 50K LIKES: +2 PLÄTZE</button>
-                        <button class="btn-control" onclick="setOvertime(15)">🐸 FROSCH OVERTIME (+15 MIN)</button>
                         <button class="btn-control" style="background:var(--neon-gold); color:black;" onclick="toggleVoting()">🏆 LIVE-VOTING START/STOP</button>
-                        <button class="btn-control" style="background:#22c55e;" onclick="closeVotingAndSelectChamp()">👑 CHAMP KREIEREN</button>
                     </div>
                 </div>
 
@@ -116,13 +114,11 @@
             
             document.getElementById('admin-total-time').innerText = data.spentFormatted;
             
-            // Logik für die Anzeige der beiden System-Buttons
             const btnOnline = document.getElementById('btn-system-online');
             const btnOffline = document.getElementById('btn-system-offline');
             const statusText = document.getElementById('admin-form-status');
             
             if (data.systemOnline === false) {
-                // System ist Offline: Mache Offline-Button knallrot, Online-Button grau
                 btnOnline.style.background = "#374151";
                 btnOnline.style.opacity = "0.4";
                 btnOnline.style.boxShadow = "none";
@@ -133,7 +129,6 @@
                 
                 statusText.innerText = "🔴 SYSTEM OFFLINE GESPERRT";
             } else {
-                // System ist Online: Mache Online-Button knallgrün, Offline-Button grau
                 btnOnline.style.background = "#22c55e";
                 btnOnline.style.opacity = "1";
                 btnOnline.style.boxShadow = "0 0 15px rgba(34, 197, 94, 0.6)";
@@ -206,7 +201,6 @@
         } catch(e) { console.log(e); }
     }
 
-    // NEU: Setzt gezielt den Status mit Bestätigung
     async function setSystemStatus(isOnline) {
         await fetch('/api/admin/set-system-status', { 
             method: 'POST', 
@@ -215,7 +209,6 @@
         });
         loadAdminQueue();
         
-        // Die Benachrichtigung an den Admin
         if (isOnline) {
             alert("✅ ERFOLG: Das System ist jetzt ONLINE! Das Einreicheformular ist für die Zuschauer geöffnet.");
         } else {
@@ -241,9 +234,7 @@
     async function trashSong(index) { 
         if(confirm("Song permanent löschen und Sendezeit wieder freigeben?")) { await fetch(`/api/queue/${index}`, { method: 'DELETE', headers: {'Authorization': token} }); loadAdminQueue(); } 
     }
-    async function setOvertime(min) { await fetch('/api/admin/overtime', { method: 'POST', headers: {'Authorization': token, 'Content-Type':'application/json'}, body: JSON.stringify({ minutes: min }) }); loadAdminQueue(); }
     async function toggleVoting() { await fetch('/api/admin/toggle-voting', { method: 'POST', headers: {'Authorization': token} }); alert("Voting-Status geändert!"); }
-    async function closeVotingAndSelectChamp() { await fetch('/api/admin/close-voting-champion', { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); }
     async function resetQueue() { if(confirm("Warteliste leeren?")) { await fetch('/api/queue/reset', { method: 'POST', headers: {'Authorization': token} }); loadAdminQueue(); } }
 </script>
 </body>
