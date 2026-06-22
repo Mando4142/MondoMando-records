@@ -18,13 +18,15 @@ let dbData = {
     votingActive: false,
     votes: {},
     hallOfFame: [],
-    systemOnline: true // Master-Schalter Startwert
+    historicalHits: {}, // NEU: Archiv für die Hit Playlist
+    systemOnline: true
 };
 
 if (fs.existsSync(DB_FILE)) {
     try { 
         const loadedData = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); 
         dbData = { ...dbData, ...loadedData };
+        if (!dbData.historicalHits) dbData.historicalHits = {}; // Sicherheitshalber anlegen
     } catch (e) { console.log("DB initialisiert."); }
 }
 
@@ -51,6 +53,14 @@ function checkAdminAuth(req, res, next) {
     } else {
         res.status(401).json({ error: "Unbefugter Zugriff!" });
     }
+}
+
+// Hilfsfunktion für ein exaktes Schweizer Datum (DD.MM.YYYY)
+function getSwissDateString(d) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}.${month}.${year}`;
 }
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
@@ -81,12 +91,12 @@ app.get('/api/queue', (req, res) => {
         votingActive: dbData.votingActive,
         votes: dbData.votes,
         hallOfFame: dbData.hallOfFame,
-        systemOnline: dbData.systemOnline !== false // Gibt Status an Frontends
+        historicalHits: dbData.historicalHits, // Gibt das Archiv ans Frontend
+        systemOnline: dbData.systemOnline !== false
     });
 });
 
 app.post('/api/submit', (req, res) => {
-    // Sofort blockieren, wenn Offline
     if (dbData.systemOnline === false) {
         return res.status(400).json({ error: "Das Einreicheformular ist aktuell offline!" });
     }
@@ -141,10 +151,9 @@ app.post('/api/admin/auth', (req, res) => {
     else res.status(401).json({ error: "Falsches Passwort!" });
 });
 
-// NEU: Route nimmt gezielt "Online" oder "Offline" an
 app.post('/api/admin/set-system-status', checkAdminAuth, (req, res) => {
     const { online } = req.body;
-    dbData.systemOnline = !!online; // Setzt gezielt auf true oder false
+    dbData.systemOnline = !!online;
     saveToDB();
     res.json({ success: true, systemOnline: dbData.systemOnline });
 });
@@ -152,7 +161,24 @@ app.post('/api/admin/set-system-status', checkAdminAuth, (req, res) => {
 app.post('/api/queue/:index/hit', checkAdminAuth, (req, res) => {
     const index = parseInt(req.params.index);
     if (dbData.songQueue[index]) {
-        dbData.songQueue[index].isHit = !dbData.songQueue[index].isHit;
+        const song = dbData.songQueue[index];
+        song.isHit = !song.isHit;
+        
+        // NEU: Vollautomatisches Speichern im Hit-Archiv nach Datum
+        const dateStr = getSwissDateString(new Date());
+        if (!dbData.historicalHits) dbData.historicalHits = {};
+        if (!dbData.historicalHits[dateStr]) dbData.historicalHits[dateStr] = [];
+        
+        if (song.isHit) {
+            const exists = dbData.historicalHits[dateStr].find(s => s.artist === song.artist && s.title === song.title);
+            if (!exists) {
+                dbData.historicalHits[dateStr].push({ artist: song.artist, title: song.title, genre: song.genre });
+            }
+        } else {
+            dbData.historicalHits[dateStr] = dbData.historicalHits[dateStr].filter(s => !(s.artist === song.artist && s.title === song.title));
+            if (dbData.historicalHits[dateStr].length === 0) delete dbData.historicalHits[dateStr];
+        }
+
         saveToDB();
         res.json({ success: true });
     } else res.status(400).json({ error: "Index Fehler" });
