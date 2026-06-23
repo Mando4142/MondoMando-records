@@ -6,122 +6,90 @@
     <title>Mondo Mando Records - Song Einsenden</title>
     <style>
         :root {
-            --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --neon-green: #22c55e;
-            --neon-orange: #ff5500; --text-main: #ffffff; --text-muted: #8e8e9f; --form-bg: rgba(19, 19, 26, 0.95);
+            --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --neon-orange: #ff5500;
+            --text-main: #ffffff; --form-bg: rgba(19, 19, 26, 0.95);
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Impact', 'Arial Black', sans-serif; color: var(--text-main); overflow: hidden; }
         .studio-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('studio_bg.jpg'); background-size: cover; background-position: center; filter: brightness(0.8); z-index: -1; }
         .overlay-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 40px 0; box-sizing: border-box; }
         .interface-content { width: 100%; max-width: 650px; pointer-events: auto; }
         
-        .card { background-color: var(--form-bg); border: 2px solid var(--neon-cyan); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2), inset 0 0 15px rgba(0, 242, 254, 0.1); backdrop-filter: blur(5px); }
-        .card.pink-glow { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1); }
-        .card.gold-glow { border-color: var(--neon-gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); }
+        .card { background-color: var(--form-bg); border: 2px solid var(--neon-cyan); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); backdrop-filter: blur(5px); }
+        .card.pink-glow { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.2); }
+        .card.gold-glow { border-color: var(--neon-gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3); }
 
-        /* MARKANTER ORANGER REGELN-BUTTON */
-        .btn-rules-small {
-            position: absolute; top: 15px; right: 20px;
-            background: var(--neon-orange); border: 2px solid #fff;
-            color: #000; padding: 8px 16px; border-radius: 8px;
-            font-size: 14px; cursor: pointer; text-transform: uppercase; font-weight: bold;
-            animation: pulse-orange 1.5s infinite; box-shadow: 0 0 15px var(--neon-orange);
-            font-family: 'Impact', sans-serif; letter-spacing: 1px;
-        }
-        @keyframes pulse-orange { 0% { transform: scale(1); box-shadow: 0 0 5px var(--neon-orange); } 50% { transform: scale(1.05); box-shadow: 0 0 20px var(--neon-orange); } 100% { transform: scale(1); box-shadow: 0 0 5px var(--neon-orange); } }
+        .btn-rules-small { position: absolute; top: 15px; right: 20px; background: var(--neon-orange); border: 2px solid #fff; color: #000; padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; text-transform: uppercase; font-weight: bold; animation: pulse-orange 1.5s infinite; box-shadow: 0 0 15px var(--neon-orange); font-family: 'Impact', sans-serif; }
+        @keyframes pulse-orange { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         
-        /* Popup Styles */
-        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .popup-content { background: var(--form-bg); border: 2px solid var(--neon-cyan); padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; color: white; position: relative; }
-        .popup-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 24px; color: var(--neon-pink); }
-        .rule-pulse-box { border: 2px solid #ef4444 !important; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0px #ef4444; } 50% { box-shadow: 0 0 10px #ef4444; } 100% { box-shadow: 0 0 0px #ef4444; } }
+        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 20000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .popup-content { background: var(--form-bg); border: 3px solid var(--neon-cyan); padding: 40px; border-radius: 20px; max-width: 550px; width: 90%; color: white; text-align: center; }
+        .neon-link { display: block; padding: 15px; text-decoration: none; font-family: 'Impact'; font-size: 18px; border-radius: 8px; color: black; margin-bottom: 10px; border: 2px solid #fff; }
 
         .status-header { display: flex; justify-content: space-between; align-items: center; font-size: 20px; text-transform: uppercase; }
-        .countdown-text { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 242, 254, 0.8); letter-spacing: 1px; }
-        .status-divider { border: 0; border-top: 1px solid rgba(142, 142, 159, 0.4); margin: 15px 0; }
-        .status-stats { display: flex; justify-content: space-between; font-family: sans-serif; font-size: 14px; font-weight: bold; }
-        .time-highlight { color: var(--neon-cyan); }
-        .badge-live { background-color: var(--neon-pink); color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px; margin-right: 10px; animation: pulse 1.5s infinite; vertical-align: middle; }
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; box-shadow: 0 0 15px var(--neon-pink); } 100% { opacity: 0.8; } }
+        .countdown-text { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 242, 254, 0.8); }
+        .status-stats { display: flex; justify-content: space-between; font-family: sans-serif; font-size: 14px; font-weight: bold; margin-top: 15px; }
+        
+        .calendar-section { margin-top: 25px; padding-top: 20px; border-top: 1px dashed rgba(0, 242, 254, 0.3); }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .cal-day { padding: 10px 5px; background: rgba(5,5,7,0.8); border: 1px solid #2a2a35; border-radius: 6px; cursor: pointer; }
+        .cal-day.is-selected { background: var(--neon-gold); color: black; }
 
-        h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; }
         .form-group { margin-bottom: 22px; }
-        label { display: block; margin-bottom: 8px; font-size: 16px; text-transform: uppercase; color: var(--text-main); }
-        input[type="text"], input[type="url"], input[type="number"], select { width: 100%; padding: 14px; background: rgba(5, 5, 7, 0.8); border: 2px solid #2a2a35; border-radius: 8px; color: white; font-size: 16px; box-sizing: border-box; }
-        .duration-inputs { display: flex; gap: 15px; }
-        .checkbox-group { display: flex; align-items: flex-start; gap: 15px; background-color: rgba(5, 5, 7, 0.8); padding: 15px; border: 1px dashed var(--neon-pink); border-radius: 8px; margin-top: 10px; font-family: sans-serif; }
-        .btn-submit { width: 100%; padding: 20px; font-size: 24px; text-transform: uppercase; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; letter-spacing: 3px; font-family: 'Impact', sans-serif; box-shadow: 0 0 20px var(--neon-pink); margin-top: 20px; background: linear-gradient(45deg, var(--neon-pink) 25%, #bc005b 25%, #bc005b 50%, var(--neon-pink) 50%, var(--neon-pink) 75%, #bc005b 75%, #bc005b); background-size: 50px 50px; animation: move-stripes 1.5s linear infinite; }
-        @keyframes move-stripes { 0% { background-position: 0 0; } 100% { background-position: 50px 0; } }
-
-        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: rgba(5, 5, 7, 0.8); border: 1px solid #2a2a35; border-left: 5px solid var(--neon-cyan); border-radius: 6px; margin-bottom: 12px; font-family: sans-serif; }
-        .hof-card { background: rgba(5, 5, 7, 0.8); border: 2px solid var(--neon-gold); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px; }
-        #submit-error-box { color: #ffffff; background-color: #ef4444; border: 2px solid #b91c1c; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; text-align: center; }
+        input, select { width: 100%; padding: 14px; background: rgba(5, 5, 7, 0.8); border: 2px solid #2a2a35; border-radius: 8px; color: white; font-size: 16px; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 20px; font-size: 24px; text-transform: uppercase; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; background: var(--neon-pink); }
+        .queue-item { display: flex; justify-content: space-between; padding: 15px; background: rgba(5, 5, 7, 0.8); border-left: 5px solid var(--neon-cyan); margin-bottom: 10px; }
+        .hof-card { border: 2px solid var(--neon-gold); padding: 15px; border-radius: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="studio-background"></div>
     <div class="overlay-container">
         <div class="interface-content">
-            
             <div class="card" style="padding: 25px;">
                 <div class="status-header">
-                    <span id="stream-status-title"><span id="live-badge" class="badge-live" style="display:none;">LIVE</span>NÄCHSTER STREAM</span>
-                    <span id="countdown" class="countdown-text">BERECHNE...</span>
+                    <span>LIVE-STATUS</span>
+                    <span id="countdown" class="countdown-text">...</span>
                 </div>
                 <hr class="status-divider">
                 <div class="status-stats">
-                    <div>FREIE SENDEMINUTEN: <span id="time-left-pot" class="time-highlight">90 Min. 00 Sek.</span></div>
-                    <div>BELEGTE SHOW-ZEIT: <span id="estimated-wait" class="time-highlight">0 Min. 00 Sek.</span></div>
+                    <div>FREI: <span id="time-left-pot" class="time-highlight">90 Min.</span></div>
+                    <div>BELEGT: <span id="estimated-wait" class="time-highlight">0 Min.</span></div>
+                </div>
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <button onclick="changeMonth(-1)">◀</button>
+                        <h3 id="cal-month-year" style="margin:0; color:var(--neon-cyan);">MONAT</h3>
+                        <button onclick="changeMonth(1)">▶</button>
+                    </div>
+                    <div id="calendar-grid-content" class="calendar-grid"></div>
                 </div>
             </div>
 
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
                 <button class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen</button>
-                <h2 id="main-card-title">SONG EINREICHEN</h2>
+                <h2>SONG EINREICHEN</h2>
                 <form id="songForm" onsubmit="addSongToServer(event)">
+                    <div class="form-group"><label>Künstlername</label> <input type="text" id="artistName" required></div>
+                    <div class="form-group"><label>Song Titel</label> <input type="text" id="songTitle" required></div>
+                    <div class="form-group"><label>Song Link</label> <input type="url" id="songLink" required></div>
                     <div class="form-group">
-                        <label for="artistName">Künstlername</label>
-                        <input type="text" id="artistName" required placeholder="z.B. Mando">
+                        <label>Dauer (Min/Sek)</label>
+                        <div style="display:flex; gap:10px;"><input type="number" id="durationMin" required><input type="number" id="durationSec" required></div>
                     </div>
                     <div class="form-group">
-                        <label for="songTitle">Song Titel</label>
-                        <input type="text" id="songTitle" required placeholder="Titel deines Tracks">
-                    </div>
-                    <div class="form-group">
-                        <label for="songLink">Song Link</label>
-                        <input type="url" id="songLink" required placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>Genaue Song-Dauer</label>
-                        <div class="duration-inputs">
-                            <input type="number" id="durationMin" required placeholder="MIN" min="0">
-                            <input type="number" id="durationSec" required placeholder="SEK" min="0" max="59">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="genre">Genre</label>
+                        <label>Genre</label>
                         <select id="genre" required>
                             <option value="Pop / Modern Hit">Pop / Modern Hit</option>
                             <option value="Hip Hop / Rap / Trap">Hip Hop / Rap / Trap</option>
                             <option value="EDM / House / Dance">EDM / House / Dance</option>
                             <option value="Anderes Genre">Anderes Genre</option>
                             <option value="Schlager" style="color:#ef4444">[GESPERRT] Schlager</option>
-                            <option value="Hardstyle" style="color:#ef4444">[GESPERRT] Hardstyle</option>
-                            <option value="Hardcore" style="color:#ef4444">[GESPERRT] Hardcore</option>
-                            <option value="Metal" style="color:#ef4444">[GESPERRT] Metal</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label style="color: var(--neon-cyan);">Bestätigung</label>
-                        <label class="checkbox-group">
-                            <input type="checkbox" required>
-                            <span>Ich besitze alle Rechte an diesem Song.</span>
-                        </label>
-                        <label class="checkbox-group rule-pulse-box" style="background-color: rgba(239, 68, 68, 0.08);">
-                            <input type="checkbox" required>
-                            <span style="color:#ffcccc;"><strong>FAIR PLAY & BANN-WARNUNG:</strong> Ich bestätige, dass ich mich fair verhalte und mir keine Fake-Namen ausdenke. Bei Verstößen droht der <strong>Permabann!</strong></span>
-                        </label>
+                    <div class="form-group" style="border:1px dashed var(--neon-pink); padding:10px; border-radius:8px;">
+                        <label><input type="checkbox" required> Ich besitze alle Rechte.</label>
+                        <label style="color:#ffcccc"><input type="checkbox" required> <strong>FAIR PLAY:</strong> Keine Fake-Namen! <strong>Permabann!</strong></label>
                     </div>
                     <button type="submit" class="btn-submit">SONG EINSENDEN</button>
                 </form>
@@ -130,84 +98,64 @@
             <div id="rulesPopup" class="popup-overlay">
                 <div class="popup-content">
                     <span class="popup-close" onclick="document.getElementById('rulesPopup').style.display='none'">&times;</span>
-                    <h2>Stream-Regeln</h2>
-                    <div style="font-size:14px; color:#ccc; line-height:1.6;">
+                    <h2 style="font-size: 32px; border-bottom: 4px solid var(--neon-pink);">STREAM-REGELN</h2>
+                    <div style="font-size:20px; text-align:left; line-height:2; color:#ccc;">
                         <p>1. <strong>Zeitlimit:</strong> 90 Min. Gesamtzeit.</p>
-                        <p>2. <strong>Overtime:</strong> Max. +30 Min. (Frosch 249 Coins).</p>
-                        <p>3. <strong>Forbidden Genres:</strong> Schlager, Hardstyle, Hardcore & Metal.</p>
-                        <p>4. <strong>Premium:</strong> „DJ-Set“ (399 Coins) schaltet den 3. Song-Slot frei.</p>
-                        <p>5. <strong>Fair Play:</strong> Keine Fake-Namen! Verstöße = <strong>Permabann!</strong></p>
+                        <p>2. <strong>Genres:</strong> Schlager, Hardstyle, Hardcore & Metal verboten.</p>
+                        <p>3. <strong>Fair Play:</strong> Keine Fake-Namen! Verstöße = <strong>Permabann!</strong></p>
                     </div>
+                    <button onclick="document.getElementById('rulesPopup').style.display='none'" style="width:100%; padding:20px; background:var(--neon-pink); border:none; color:white; border-radius:10px; font-size:20px;">VERSTANDEN</button>
                 </div>
             </div>
-            
+
             <div class="card pink-glow"><h2>WARTELISTE (<span id="queue-count">0</span>)</h2><div id="queue-list"></div></div>
             <div class="card gold-glow"><h2>⭐ HIT PLAYLIST ⭐</h2><div id="hit-bestenliste"></div></div>
             <div class="card" style="border-color:#22c55e"><h2>BEREITS BEWERTET 🔥</h2><div id="done-list"></div></div>
             <div class="card gold-glow"><h2>👑 HALL OF FAME 👑</h2><div id="hof-list"></div></div>
         </div>
     </div>
+
     <script>
-        const FEEDBACK_BUFFER_SEC = 120;
+        let calDate = new Date();
+        function renderCalendar() { 
+            const monthYearEl = document.getElementById('cal-month-year');
+            if(monthYearEl) monthYearEl.innerText = new Date(calDate.getFullYear(), calDate.getMonth()).toLocaleString('de-CH', { month: 'long', year: 'numeric' }).toUpperCase();
+            // Kalender-Grid-Logik hier...
+        }
         async function loadQueue() {
             try {
                 const res = await fetch('/api/queue'); const data = await res.json();
-                const queue = data.queue || []; const hallOfFame = data.hallOfFame || [];
-                document.getElementById('queue-count').innerText = queue.filter(i=>!i.isDone).length;
-                const queueList = document.getElementById('queue-list'); queueList.innerHTML = '';
-                queue.filter(i=>!i.isDone).forEach(item => {
-                    queueList.innerHTML += `<div class="queue-item"><h4>${item.artist} - ${item.title}</h4></div>`;
-                });
-                const hofList = document.getElementById('hof-list'); hofList.innerHTML = '';
-                hallOfFame.forEach(h => hofList.innerHTML += `<div class="hof-card"><h3>${h.artist}</h3><p>${h.title}</p></div>`);
+                document.getElementById('queue-count').innerText = data.queue.filter(i=>!i.isDone).length;
+                const list = document.getElementById('queue-list'); list.innerHTML = '';
+                data.queue.filter(i=>!i.isDone).forEach(item => list.innerHTML += `<div class="queue-item"><h4>${item.artist} - ${item.title}</h4></div>`);
             } catch(e) {}
         }
         async function addSongToServer(e) {
-            e.preventDefault(); 
-            const artist = document.getElementById('artistName').value;
-            const title = document.getElementById('songTitle').value;
-            const songLink = document.getElementById('songLink').value;
-            const duration = (parseInt(document.getElementById('durationMin').value)*60) + parseInt(document.getElementById('durationSec').value);
-            const genre = document.getElementById('genre').value;
-            const res = await fetch('/api/submit', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({artist, title, duration, genre, songLink}) });
+            e.preventDefault();
+            const res = await fetch('/api/submit', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
+                artist: document.getElementById('artistName').value,
+                title: document.getElementById('songTitle').value,
+                duration: (parseInt(document.getElementById('durationMin').value)*60) + parseInt(document.getElementById('durationSec').value),
+                genre: document.getElementById('genre').value,
+                songLink: document.getElementById('songLink').value
+            })});
             const resData = await res.json();
             if(resData.voteCode) {
-                const linkBoost = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/4fc302b9-f53e-4994-8612-11fd40e6c5d3";
-                const linkAfterHours = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/434396c0-e721-45e1-8751-f5d39d3a4632";
-                const linkDice = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/65229fc8-af91-4ef7-a20c-738d5933a25a";
                 const overlay = document.createElement('div');
-                overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(13,13,17,0.95); z-index:10000; display:flex; justify-content:center; align-items:flex-start; padding-top: 5vh; overflow-y: auto;";
-                overlay.innerHTML = `<div style="background:#14141f; border:2px solid var(--neon-gold); padding:40px; border-radius:16px; text-align:center; max-width: 550px; width: 90%;">
-                    <h1 style="color:var(--neon-gold);">TRACK EINGEREICHT!</h1>
-                    <p>Dein Voting-Code:</p>
-                    <div style="background:#000; padding:15px; font-size:36px; color:var(--neon-cyan); letter-spacing:10px; margin:10px 0; border:1px dashed var(--neon-cyan);">${resData.voteCode}</div>
-                    <hr style="border:1px solid #2a2a35; margin: 25px 0;">
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <a href="${linkBoost}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background:var(--neon-cyan); color:black; padding:15px; text-decoration:none; border-radius:8px;">🚀 PLATZ 1 BOOST</a>
-                        <a href="${linkAfterHours}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background:#7000ff; color:white; padding:15px; text-decoration:none; border-radius:8px;">🌙 AFTER HOURS PASS</a>
-                        <a href="${linkDice}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background:var(--neon-pink); color:white; padding:15px; text-decoration:none; border-radius:8px;">🎲 SONGWÜRFEL</a>
-                    </div>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background:#374151; border:none; padding:15px; color:white; margin-top:25px; width:100%; border-radius:8px;">SCHLIESSEN</button>
+                overlay.className = "popup-overlay"; overlay.style.display = "flex";
+                overlay.innerHTML = `<div class="popup-content">
+                    <h1>TRACK EINGEREICHT!</h1>
+                    <div style="background:#000; padding:20px; font-size:40px; color:var(--neon-cyan); border:1px dashed var(--neon-cyan); margin:20px 0;">${resData.voteCode}</div>
+                    <a href="https://mondomandorecords.lemonsqueezy.com/checkout/buy/4fc302b9-f53e-4994-8612-11fd40e6c5d3?checkout[custom][voteCode]=${resData.voteCode}" class="neon-link" style="background:var(--neon-cyan)">🚀 PLATZ 1 BOOST</a>
+                    <a href="https://mondomandorecords.lemonsqueezy.com/checkout/buy/434396c0-e721-45e1-8751-f5d39d3a4632?checkout[custom][voteCode]=${resData.voteCode}" class="neon-link" style="background:#7000ff; color:white">🌙 AFTER HOURS PASS</a>
+                    <a href="https://mondomandorecords.lemonsqueezy.com/checkout/buy/65229fc8-af91-4ef7-a20c-738d5933a25a?checkout[custom][voteCode]=${resData.voteCode}" class="neon-link" style="background:var(--neon-pink); color:white">🎲 SONGWÜRFEL</a>
+                    <button onclick="this.parentElement.parentElement.remove()" style="width:100%; padding:20px; background:#374151; color:white; border:none; border-radius:10px; margin-top:20px; font-size:20px;">SCHLIESSEN</button>
                 </div>`;
                 document.body.appendChild(overlay);
                 document.getElementById('songForm').reset(); loadQueue();
             }
         }
-        function updateCountdown() {
-            const now = new Date(); const currentDay = now.getDay(); const currentHour = now.getHours(); const currentMin = now.getMinutes();
-            let target = new Date(); target.setHours(19, 0, 0, 0); let daysToAdd = (7 - currentDay) % 7;
-            if (currentDay === 0) {
-                if (currentHour >= 19 && (currentHour < 21 || (currentHour === 21 && currentMin < 10))) {
-                    document.getElementById('live-badge').style.display = "inline-block"; document.getElementById('countdown').innerText = "JETZT LIVE!"; return;
-                } else if (currentHour >= 21) { daysToAdd = 7; }
-            }
-            target.setDate(now.getDate() + daysToAdd); const diff = target - now;
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24)); const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            document.getElementById('live-badge').style.display = "none";
-            document.getElementById('countdown').innerText = `${d} TAGE, ${h} STD. / ${m} MIN.`;
-        }
-        setInterval(updateCountdown, 60000); updateCountdown();
-        setInterval(loadQueue, 5000); loadQueue();
+        setInterval(loadQueue, 5000); loadQueue(); renderCalendar();
     </script>
 </body>
 </html>
