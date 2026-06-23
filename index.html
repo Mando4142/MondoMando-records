@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mondo Mando Records - Dashboard</title>
-    <style>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=xPDvJAo59_-AJlN4PwwRDSdj_iiI7VspWC3mk4m-tHElSTeUpCRYWF_VkVfJD-GOHWrSTgnq88Ef4LPfVm8I_xPlhBk166b_0jTu_wNr8zKYbe8i30YeHBOm8ehi-IkblolRlbyW7xmEmWY6TZ560Yj0UJynR283t5heusVOclTm7Ubc6pjkC5LBC07WNHVky3VIizpvCVcBLENEJT-jbS9QoPCYAvNm5bCsdWDSIeD0hTnfJDr_cs9-_tw8fv4_XOfNfPhtbuO00HE5mOjOCV9lH-ZnFI1v26PvYQQDmybLjiMKiNSs-_VfX_rSqqHLZ5bU8IPP3NDxTN-KyJMvlg" charset="UTF-8"></script><style>
         :root {
             --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --neon-green: #22c55e;
             --neon-orange: #ff5500; --text-main: #ffffff; --text-muted: #8e8e9f; --form-bg: rgba(19, 19, 26, 0.85);
@@ -45,21 +45,21 @@
         /* Form & Title Styles */
         h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; transition: all 0.3s ease; }
         
-        /* NEON GRÜNER REGEL-BUTTON */
+        /* KLEINER NEON-ORANGER REGEL-BUTTON */
         .btn-rules-small { 
-            position: absolute; top: 15px; right: 20px; 
-            background: rgba(0, 0, 0, 0.5); 
-            border: 2px solid var(--neon-green); 
+            position: absolute; top: 12px; right: 14px; 
+            background: rgba(0, 0, 0, 0.55); 
+            border: 2px solid var(--neon-orange); 
             color: #ffffff; 
-            padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; text-transform: uppercase; 
-            font-weight: bold; animation: pulse-green 1.5s infinite; 
-            box-shadow: 0 0 15px var(--neon-green), inset 0 0 10px var(--neon-green); 
-            font-family: 'Impact', sans-serif; letter-spacing: 1px; text-shadow: 0 0 5px var(--neon-green);
+            padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; text-transform: uppercase; 
+            font-weight: bold; animation: pulse-orange 1.8s infinite; 
+            box-shadow: 0 0 12px var(--neon-orange), inset 0 0 8px rgba(255,85,0,0.45); 
+            font-family: 'Impact', sans-serif; letter-spacing: 1px; text-shadow: 0 0 5px var(--neon-orange);
         }
-        @keyframes pulse-green { 
-            0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-green), inset 0 0 5px var(--neon-green); } 
-            50% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-green), inset 0 0 15px var(--neon-green); } 
-            100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-green), inset 0 0 5px var(--neon-green); } 
+        @keyframes pulse-orange { 
+            0% { transform: scale(1); box-shadow: 0 0 8px var(--neon-orange), inset 0 0 5px rgba(255,85,0,0.45); } 
+            50% { transform: scale(1.04); box-shadow: 0 0 20px var(--neon-orange), inset 0 0 12px rgba(255,85,0,0.65); } 
+            100% { transform: scale(1); box-shadow: 0 0 8px var(--neon-orange), inset 0 0 5px rgba(255,85,0,0.45); } 
         }
 
         .rule-pulse-box { border: 2px solid #ef4444 !important; animation: pulse-red 1.5s infinite; }
@@ -71,14 +71,14 @@
         .duration-inputs { display: flex; gap: 15px; }
         .checkbox-group { display: flex; align-items: flex-start; gap: 15px; background-color: rgba(5, 5, 7, 0.8); padding: 15px; border: 1px dashed var(--neon-pink); border-radius: 8px; margin-top: 10px; font-family: sans-serif; }
         
-        /* GESTREIFTER SONG EINSENDEN BUTTON */
+        /* NEON-GRÜNER SONG EINSENDEN BUTTON */
         .btn-submit { 
-            width: 100%; padding: 20px; font-size: 26px; text-transform: uppercase; color: #ffffff; 
+            width: 100%; padding: 20px; font-size: 26px; text-transform: uppercase; color: #001b10; 
             border: none; border-radius: 8px; cursor: pointer; letter-spacing: 3px; font-family: 'Impact', sans-serif; 
-            box-shadow: 0 0 20px var(--neon-pink); margin-top: 20px; 
-            background: repeating-linear-gradient(45deg, var(--neon-pink), var(--neon-pink) 20px, #b30059 20px, #b30059 40px); 
+            box-shadow: 0 0 24px var(--neon-green), inset 0 0 12px rgba(255,255,255,0.25); margin-top: 20px; 
+            background: repeating-linear-gradient(45deg, var(--neon-green), var(--neon-green) 20px, #16a34a 20px, #16a34a 40px); 
             background-size: 56px 56px; animation: move-stripes 1s linear infinite; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 0 8px rgba(255,255,255,0.45);
         }
         .btn-submit:disabled { filter: grayscale(0.8); cursor: not-allowed; animation: none; }
         @keyframes move-stripes { 0% { background-position: 0 0; } 100% { background-position: 56px 0; } }
@@ -120,7 +120,7 @@
 
             <!-- HAUPTCARD: EINREICHEN, VOTING ODER VERLÄNGERUNG -->
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
-                <button type="button" class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen & Infos</button>
+                <button type="button" class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln & Infos</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 24px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6); text-transform: uppercase;">STREAM IST OFFLINE</div>
 
@@ -199,6 +199,8 @@
                 <div id="voting-container" style="display:none;"></div>
             </div>
             
+            <!-- PREMIUM SHOP erscheint jetzt direkt nach dem Einsenden im Pop-up -->
+
             <!-- DIE NEUE VERLÄNGERUNGS / AFTER HOURS KARTE -->
             <div id="overtime-card" class="card orange-glow" style="display:none; border-color: var(--neon-orange);">
                 <h2 style="color: var(--neon-orange); border-bottom-color: var(--neon-orange);">⏳ VERLÄNGERUNG / AFTER HOURS (<span id="overtime-count">0</span>)</h2>
@@ -586,15 +588,21 @@
             
             const overlay = document.createElement('div');
             overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10,10,14,0.96); z-index:10000; display:flex; justify-content:center; align-items:flex-start; padding: 20px; overflow-y: auto; backdrop-filter: blur(8px); box-sizing: border-box;";
-            overlay.innerHTML = `<div style="background: rgba(19, 19, 26, 0.95); border: 3px solid var(--neon-gold); padding: 40px; border-radius: 20px; text-align: center; max-width: 550px; width: 100%; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); color: white; font-family: 'Impact', sans-serif; margin: 40px 0;">
-                <h1 style="color: var(--neon-gold); font-size: 36px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); margin-top: 0; letter-spacing: 2px;">TRACK EINGEREICHT!</h1>
-                <p style="font-family: sans-serif; font-size: 16px; color: #ccc; margin-bottom: 5px; text-transform: uppercase;">Dein Voting-Code:</p>
-                <div style="background: #000; padding: 20px; font-size: 45px; color: var(--neon-cyan); letter-spacing: 10px; margin: 15px 0; border: 2px dashed var(--neon-cyan); text-shadow: 0 0 12px rgba(0, 242, 254, 0.8); border-radius: 8px;">${resData.voteCode}</div>
-                <hr style="border: 0; border-top: 1px solid #2a2a35; margin: 25px 0;">
-                
-                <p style="font-family: sans-serif; font-size: 16px; color: #fff; margin-bottom: 20px; line-height: 1.5;">Behalte diesen Code gut, um am Ende der Show für deinen Favoriten abzustimmen!</p>
-                
-                <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 18px; color: white; margin-top: 10px; width: 100%; border-radius: 8px; font-size: 18px; cursor: pointer; text-transform: uppercase; font-family: 'Impact', sans-serif;">SCHLIESSEN</button>
+            overlay.innerHTML = `<div style="background: rgba(19, 19, 26, 0.97); border: 3px solid var(--neon-green); padding: 34px; border-radius: 22px; text-align: center; max-width: 620px; width: 100%; box-shadow: 0 0 34px rgba(34, 197, 94, 0.35), inset 0 0 18px rgba(34, 197, 94, 0.12); color: white; font-family: 'Impact', sans-serif; margin: 35px 0;">
+                <h1 style="color: var(--neon-green); font-size: 38px; text-shadow: 0 0 16px rgba(34, 197, 94, 0.8); margin: 0 0 8px 0; letter-spacing: 2px;">✅ TRACK EINGEREICHT!</h1>
+                <p style="font-family: sans-serif; font-size: 16px; color: #d1d5db; margin-bottom: 5px; text-transform: uppercase;">Dein Voting-Code:</p>
+                <div style="background: #000; padding: 20px; font-size: 45px; color: var(--neon-cyan); letter-spacing: 10px; margin: 15px 0; border: 2px dashed var(--neon-cyan); text-shadow: 0 0 12px rgba(0, 242, 254, 0.8); border-radius: 10px;">${resData.voteCode}</div>
+                <p style="font-family: sans-serif; font-size: 15px; color: #ffffff; margin: 0 0 18px 0; line-height: 1.5;">Behalte diesen Code gut, um am Ende der Show für deinen Favoriten abzustimmen.</p>
+                <div style="border:2px solid var(--neon-gold); border-radius:16px; padding:18px; background:rgba(255,215,0,0.06); box-shadow:0 0 18px rgba(255,215,0,0.18); margin-top: 18px;">
+                    <h2 style="color:var(--neon-gold); border-bottom:2px solid var(--neon-gold); padding-bottom:8px; margin:0 0 14px 0; font-size:24px; text-shadow:0 0 10px rgba(255,215,0,0.6);">👑 Willst du deinen Song pushen?</h2>
+                    <p style="font-family:sans-serif; color:#ddd; line-height:1.45; margin:0 0 16px 0;">Nach dem Einsenden kannst du freiwillig einen Bonus kaufen. Der Code hilft dir, deinen Kauf später deinem Song zuzuordnen.</p>
+                    <div style="display:grid; gap:12px;">
+                        <a href="https://buy.stripe.com/fZu4gz6xsasDarv6ps43S00" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-cyan), #60efff); color:black; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-cyan);">🚀 Platz 1 Push – CHF 6.20</a>
+                        <a href="https://buy.stripe.com/3cI6oH8FAeIT9nrg0243S01" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-orange), #ff9a3d); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-orange);">🌙 After Hours nach 90 Min – CHF 5.00</a>
+                        <a href="https://buy.stripe.com/8x200jcVQ44f4378xA43S02" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-pink), #ff5cad); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-pink);">🎲 Song Würfel – CHF 3.50</a>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 16px; color: white; margin-top: 18px; width: 100%; border-radius: 10px; font-size: 18px; cursor: pointer; text-transform: uppercase; font-family: 'Impact', sans-serif;">OHNE BONUS SCHLIESSEN</button>
             </div>`;
             document.body.appendChild(overlay);
 
