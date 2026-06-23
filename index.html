@@ -26,6 +26,21 @@
         .cal-day.has-hits { background: rgba(255, 215, 0, 0.15); border-color: var(--neon-gold); color: var(--neon-gold); box-shadow: 0 0 8px rgba(255,215,0,0.4); }
         .cal-day.is-selected { background: var(--neon-gold); color: black; border-color: white; box-shadow: 0 0 15px white; transform: scale(1.1); z-index: 2; }
         
+        .btn-rules-small {
+            position: absolute; top: 15px; right: 20px;
+            background: rgba(255, 0, 127, 0.2); border: 1px solid var(--neon-pink);
+            color: var(--neon-pink); padding: 5px 12px; border-radius: 6px;
+            font-size: 12px; cursor: pointer; text-transform: uppercase;
+            animation: pulse-pink 2s infinite; font-family: sans-serif;
+        }
+        @keyframes pulse-pink { 0% { box-shadow: 0 0 5px var(--neon-pink); } 50% { box-shadow: 0 0 15px var(--neon-pink); } 100% { box-shadow: 0 0 5px var(--neon-pink); } }
+        
+        .rule-pulse-box {
+            border: 2px solid #ef4444 !important;
+            animation: pulse-red 1.5s infinite;
+        }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0px #ef4444; } 50% { box-shadow: 0 0 10px #ef4444; } 100% { box-shadow: 0 0 0px #ef4444; } }
+
         .info-link-container { display: flex; justify-content: center; margin-bottom: 25px; }
         .btn-info-page { background: rgba(34, 197, 94, 0.1); border: 2px solid var(--neon-green); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 30px; font-size: 15px; font-family: sans-serif; font-weight: bold; text-transform: uppercase; animation: greenPulse 2s infinite alternate; }
         @keyframes greenPulse { from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); } to { box-shadow: 0 0 18px rgba(34, 197, 94, 0.7); } }
@@ -131,7 +146,8 @@
                 </div>
             </div>
 
-            <div id="dynamic-main-card" class="card pink-glow">
+            <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
+                <button class="btn-rules-small" onclick="window.location.href='/info'">Regeln lesen</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 20px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6);"></div>
 
@@ -187,7 +203,7 @@
                                 <span class="checkbox-label"><strong>BESTÄTIGEN:</strong> Ich besitze alle Rechte an diesem Song, verwende keine fremden Samples und der Track entspricht den Richtlinien.</span>
                             </label>
                             
-                            <label class="checkbox-group" style="border-color: #ef4444; background-color: rgba(239, 68, 68, 0.08);">
+                            <label class="checkbox-group rule-pulse-box" style="background-color: rgba(239, 68, 68, 0.08);">
                                 <input type="checkbox" required>
                                 <span class="checkbox-label" style="color: #ffcccc;"><strong>FAIR PLAY & BANN-WARNUNG:</strong> Ich bestätige, dass ich mich fair gegenüber anderen verhalte und mir <strong>keine Fake-Namen</strong> ausdenke. Unfaires Verhalten führt zu einer sofortigen Sperre. Bei mehrfachen Vergehen folgt der <strong>Permabann!</strong></span>
                             </label>
@@ -493,7 +509,6 @@
         } else {
             errBox.style.display = "none"; 
             
-            // DIE EXAKTEN LEMON SQUEEZY SHARE-LINKS AUS DEINEM DASHBOARD:
             const linkBoost = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/4fc302b9-f53e-4994-8612-11fd40e6c5d3";
             const linkAfterHours = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/434396c0-e721-45e1-8751-f5d39d3a4632";
             const linkDice = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/65229fc8-af91-4ef7-a20c-738d5933a25a";
