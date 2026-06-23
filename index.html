@@ -95,7 +95,6 @@
     <div class="overlay-container">
         <div class="interface-content">
             
-            <!-- STATUS & KALENDER CARD -->
             <div class="card" style="padding: 25px;">
                 <div class="status-header">
                     <span id="stream-status-title"><span id="live-badge" class="badge-live" style="display:none;">LIVE</span>NÄCHSTER STREAM</span>
@@ -118,13 +117,11 @@
                 </div>
             </div>
 
-            <!-- HAUPTCARD: EINREICHEN, VOTING ODER VERLÄNGERUNG -->
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
                 <button type="button" class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen & Infos</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 24px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6); text-transform: uppercase;">STREAM IST OFFLINE</div>
 
-                <!-- EINREICHE-FORMULAR -->
                 <div id="form-container">
                     <form id="songForm" onsubmit="addSongToServer(event)">
                         <div class="form-group">
@@ -193,17 +190,14 @@
                     </form>
                 </div>
                 
-                <!-- LIVE VOTING FORMULAR -->
                 <div id="voting-container" style="display:none;"></div>
             </div>
             
-            <!-- DIE NEUE VERLÄNGERUNGS / AFTER HOURS KARTE -->
             <div id="overtime-card" class="card orange-glow" style="display:none; border-color: var(--neon-orange);">
                 <h2 style="color: var(--neon-orange); border-bottom-color: var(--neon-orange);">⏳ VERLÄNGERUNG / AFTER HOURS (<span id="overtime-count">0</span>)</h2>
                 <div id="overtime-list"></div>
             </div>
 
-            <!-- REGULÄRE LISTEN -->
             <div id="waitlist-card" class="card pink-glow">
                 <h2>WARTELISTE (<span id="queue-count">0</span>)</h2>
                 <div id="queue-list"></div>
@@ -226,7 +220,6 @@
         </div>
     </div>
 
-    <!-- REGELN-POPUP (Neon Grün) -->
     <div id="rulesPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 14, 0.95); z-index: 20000; justify-content: center; align-items: center; backdrop-filter: blur(8px); overflow-y: auto; padding: 20px; box-sizing: border-box;">
         <div style="background: var(--form-bg); border: 3px solid var(--neon-green); padding: 40px; border-radius: 16px; max-width: 650px; width: 100%; color: white; position: relative; box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);">
             <span onclick="document.getElementById('rulesPopup').style.display='none'" style="position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 36px; color: var(--neon-green); font-family: sans-serif;">&times;</span>
@@ -421,9 +414,10 @@
             const mainCardTitle = document.getElementById('main-card-title');
             const mainCard = document.getElementById('dynamic-main-card');
             
-            // === ERKENNUNG DER VERLÄNGERUNG (Tolerant für alle Backend-Variablen) ===
-            const isOvertimeMode = data.isOvertime === true || data.overtime === true || data.phase === 'overtime' || data.state === 'overtime' || data.overtimeActive === true;
+            // === ERKENNUNG DER VERLÄNGERUNG (Genaue Backend-Variable: data.extensionActive) ===
+            const isOvertimeMode = data.extensionActive === true;
 
+            // SYSTEM OFFLINE ODER PHASEN-UMSCHALTUNG LOGIK
             if (data.systemOnline === false) {
                 timeLeftPot.innerText = "OFFLINE"; timeLeftPot.className = "time-urgent";
                 formContainer.style.display = 'none';
@@ -435,7 +429,7 @@
                 timeLeftPot.innerText = `${data.remainingMinutes} Min. ${secFormatted} Sek.`;
                 timeLeftPot.className = data.phase && data.phase.includes('full') ? "time-urgent" : "time-highlight";
                 
-                // === UMSCHALTUNG: VOTING, STECHEN ODER VERLÄNGERUNG ===
+                // === UMSCHALTUNG AUF LIVE VOTING, STECHEN ODER VERLÄNGERUNG ===
                 if (data.votingPhase === 'active') {
                     formContainer.style.display = 'none';
                     offlineMessage.style.display = 'none';
@@ -455,6 +449,7 @@
                     mainCard.className = "card pink-glow";
                     votingContainer.innerHTML = '<div style="text-align:center; padding: 30px 20px; border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(255,0,127,0.1);"><h3 style="color: var(--neon-pink); font-size: 24px; margin-top: 0;">UNENTSCHIEDEN!</h3><p style="font-family: sans-serif; font-size: 16px; line-height: 1.5; color: #fff;">Es gibt einen Gleichstand zwischen den Favoriten. Der Admin entscheidet nun live im Stream über den Sieger!</p></div>';
                 } else if (isOvertimeMode) {
+                    // VERLÄNGERUNGS-ANSICHT
                     formContainer.style.display = 'block';
                     votingContainer.style.display = 'none';
                     offlineMessage.style.display = 'none';
@@ -464,6 +459,7 @@
                     mainCard.className = "card orange-glow";
                     if (localTimerInterval) { clearInterval(localTimerInterval); localTimerInterval = null; }
                 } else {
+                    // NORMALER MODUS
                     formContainer.style.display = 'block';
                     votingContainer.style.display = 'none';
                     offlineMessage.style.display = 'none';
@@ -479,17 +475,12 @@
             const overtimeCard = document.getElementById('overtime-card');
             const overtimeList = document.getElementById('overtime-list');
             
-            // Trenne die Tracks: Alles was "After Hours" oder "Overtime" ist, kommt in die Extra-Liste
-            let overtimeQueueRaw = [];
-            if (Array.isArray(data.overtimeQueue) && data.overtimeQueue.length > 0) {
-                overtimeQueueRaw = data.overtimeQueue;
-            } else {
-                overtimeQueueRaw = queue.filter(item => item.isOvertime === true || item.overtime === true || item.isAfterHours === true);
-            }
+            // Trenne die Tracks: Alles was "After Hours" ist (aus dem Backend isAfterHours), kommt in die Extra-Liste
+            const overtimeQueueRaw = queue.filter(item => item.isAfterHours === true);
             const overtimeActiveSongs = overtimeQueueRaw.filter(item => !item.isDone);
             
             // Die normale Warteliste behält nur die restlichen Tracks
-            const activeSongs = queue.filter(item => !item.isDone && item.isOvertime !== true && item.overtime !== true && item.isAfterHours !== true);
+            const activeSongs = queue.filter(item => !item.isDone && item.isAfterHours !== true);
             
             if (isOvertimeMode || overtimeActiveSongs.length > 0) {
                 overtimeCard.style.display = 'block';
@@ -583,6 +574,7 @@
         } else {
             errBox.style.display = "none"; 
             
+            // NEON POPUP FÜR DIE EINREICHUNG OHNE LINKS - NUR MIT VOTING CODE
             const overlay = document.createElement('div');
             overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10,10,14,0.96); z-index:10000; display:flex; justify-content:center; align-items:flex-start; padding: 20px; overflow-y: auto; backdrop-filter: blur(8px); box-sizing: border-box;";
             overlay.innerHTML = `<div style="background: rgba(19, 19, 26, 0.95); border: 3px solid var(--neon-gold); padding: 40px; border-radius: 20px; text-align: center; max-width: 550px; width: 100%; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); color: white; font-family: 'Impact', sans-serif; margin: 40px 0;">
