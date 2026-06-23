@@ -95,6 +95,11 @@
         
         .pulse-danger { animation: pulse-danger 1s infinite; }
         @keyframes pulse-danger { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        /* NEU: STRIPE DESIGN */
+        .stripe-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-stripe { padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-family: 'Impact', sans-serif; font-size: 12px; text-transform: uppercase; transition: transform 0.2s; }
+        .btn-stripe:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -102,20 +107,14 @@
     <div class="overlay-container">
         <div class="interface-content">
             
-            <div class="card" style="border: 2px solid var(--neon-gold); padding: 20px; border-radius: 15px; margin-bottom: 20px; background: var(--form-bg);">
-                <h2 style="color: var(--neon-gold); margin-top: 0;">💳 GOLD PASS</h2>
-                <button class="btn-submit" style="background: var(--neon-gold); color: black; cursor: pointer; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold;" onclick="buyPriority()">🚀 PRIORITY BOOST (6.20 CHF)</button>
+            <div class="card" style="border-color: var(--neon-gold); padding: 20px;">
+                <h2 style="color: var(--neon-gold); border-bottom-color: var(--neon-gold); margin-top:0;">💳 GOLD PASS</h2>
+                <div class="stripe-container">
+                    <button class="btn-stripe" style="background:#ff5500;" onclick="buy('priority')">🚀 PRIO</button>
+                    <button class="btn-stripe" style="background:#6b21a8;" onclick="buy('afterhours')">🌙 AH</button>
+                    <button class="btn-stripe" style="background:#2563eb;" onclick="buy('dice')">🎲 DICE</button>
+                </div>
             </div>
-            
-            <script>
-                async function buyPriority() {
-                    const artist = prompt("Künstlername zur Aktivierung:");
-                    if(!artist) return;
-                    const res = await fetch('/api/checkout/priority', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({artist}) });
-                    const data = await res.json();
-                    window.location.href = data.url;
-                }
-            </script>
 
             <div class="card" style="padding: 20px;">
                 <div class="calendar-header">
@@ -235,6 +234,20 @@
     </div>
 
 <script>
+    // STRIPE KAUF-FUNKTION
+    async function buy(type) {
+        const artist = prompt("Dein Künstlername:");
+        if(!artist) return;
+        const res = await fetch(`/api/checkout/${type}`, { 
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'}, 
+            body: JSON.stringify({artist}) 
+        });
+        const data = await res.json();
+        if(data.url) window.location.href = data.url;
+        else alert("Fehler!");
+    }
+
     const FEEDBACK_BUFFER_SEC = 120;
     let calDate = new Date(); let serverHistoricalHits = {}; let selectedArchiveDate = null;
     let selectedVotes = [];
