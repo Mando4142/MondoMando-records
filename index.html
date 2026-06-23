@@ -17,6 +17,12 @@
         .card.pink-glow { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1); }
         .card.gold-glow { border-color: var(--neon-gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); }
         h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; transition: all 0.5s ease; }
+        
+        /* Stripe Bereich */
+        .stripe-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-stripe { padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-family: 'Impact', sans-serif; font-size: 13px; text-transform: uppercase; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .btn-stripe:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.4); }
+
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-header button { background: rgba(0,242,254,0.1); border: 1px solid var(--neon-cyan); border-radius: 4px; padding: 5px 15px; color: var(--neon-cyan); font-size: 18px; cursor: pointer; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
@@ -95,27 +101,39 @@
         
         .pulse-danger { animation: pulse-danger 1s infinite; }
         @keyframes pulse-danger { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        
-        /* NEU: STRIPE DESIGN */
-        .stripe-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-stripe { padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-family: 'Impact', sans-serif; font-size: 12px; text-transform: uppercase; transition: transform 0.2s; }
-        .btn-stripe:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
     <div class="studio-background"></div>
     <div class="overlay-container">
         <div class="interface-content">
-            
-            <div class="card" style="border-color: var(--neon-gold); padding: 20px;">
-                <h2 style="color: var(--neon-gold); border-bottom-color: var(--neon-gold); margin-top:0;">💳 GOLD PASS</h2>
-                <div class="stripe-container">
-                    <button class="btn-stripe" style="background:#ff5500;" onclick="buy('priority')">🚀 PRIO</button>
-                    <button class="btn-stripe" style="background:#6b21a8;" onclick="buy('afterhours')">🌙 AH</button>
-                    <button class="btn-stripe" style="background:#2563eb;" onclick="buy('dice')">🎲 DICE</button>
+
+            <div class="card" style="border-color: var(--neon-gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);">
+                <h2 style="color: var(--neon-gold); border-bottom-color: var(--neon-gold); margin-bottom: 15px;">💳 GOLD PASS - VIP SUPPORT</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px; font-family: sans-serif;">Unterstütze den Stream und schalte Features frei! Danke für deinen Support, Legende! 🙏</p>
+                <div class="stripe-container" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <button class="btn-stripe" style="background: var(--neon-orange);" onclick="supportAndBuy('priority')">🚀 PRIO</button>
+                    <button class="btn-stripe" style="background: #6b21a8;" onclick="supportAndBuy('afterhours')">🌙 AH</button>
+                    <button class="btn-stripe" style="background: #2563eb;" onclick="supportAndBuy('dice')">🎲 DICE</button>
                 </div>
             </div>
-
+            
+            <script>
+                async function supportAndBuy(type) {
+                    const artist = prompt("Künstlername zur Aktivierung:");
+                    if(!artist) return;
+                    alert("Danke für deinen Support! Du hältst Mondo Mando Records am Leben. Wir leiten dich nun zur Bezahlung weiter...");
+                    const res = await fetch(`/api/checkout/${type}`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type':'application/json'}, 
+                        body: JSON.stringify({artist}) 
+                    });
+                    const data = await res.json();
+                    if(data.url) window.location.href = data.url;
+                    else alert("Fehler beim Support-Vorgang!");
+                }
+            </script>
+            
             <div class="card" style="padding: 20px;">
                 <div class="calendar-header">
                     <button onclick="changeMonth(-1)">◀</button>
@@ -234,20 +252,6 @@
     </div>
 
 <script>
-    // STRIPE KAUF-FUNKTION
-    async function buy(type) {
-        const artist = prompt("Dein Künstlername:");
-        if(!artist) return;
-        const res = await fetch(`/api/checkout/${type}`, { 
-            method: 'POST', 
-            headers: {'Content-Type':'application/json'}, 
-            body: JSON.stringify({artist}) 
-        });
-        const data = await res.json();
-        if(data.url) window.location.href = data.url;
-        else alert("Fehler!");
-    }
-
     const FEEDBACK_BUFFER_SEC = 120;
     let calDate = new Date(); let serverHistoricalHits = {}; let selectedArchiveDate = null;
     let selectedVotes = [];
