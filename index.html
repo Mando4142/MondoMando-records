@@ -102,6 +102,21 @@
     <div class="overlay-container">
         <div class="interface-content">
             
+            <div class="card" style="border: 2px solid var(--neon-gold); padding: 20px; border-radius: 15px; margin-bottom: 20px; background: var(--form-bg);">
+                <h2 style="color: var(--neon-gold); margin-top: 0;">💳 GOLD PASS</h2>
+                <button class="btn-submit" style="background: var(--neon-gold); color: black; cursor: pointer; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold;" onclick="buyPriority()">🚀 PRIORITY BOOST (6.20 CHF)</button>
+            </div>
+            
+            <script>
+                async function buyPriority() {
+                    const artist = prompt("Künstlername zur Aktivierung:");
+                    if(!artist) return;
+                    const res = await fetch('/api/checkout/priority', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({artist}) });
+                    const data = await res.json();
+                    window.location.href = data.url;
+                }
+            </script>
+
             <div class="card" style="padding: 20px;">
                 <div class="calendar-header">
                     <button onclick="changeMonth(-1)">◀</button>
