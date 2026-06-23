@@ -42,8 +42,24 @@
 
         /* Form & Rules Styles */
         h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; }
-        .btn-rules-small { position: absolute; top: 15px; right: 20px; background: rgba(255, 0, 127, 0.2); border: 1px solid var(--neon-pink); color: var(--neon-pink); padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; text-transform: uppercase; animation: pulse-pink 2s infinite; font-family: sans-serif; }
-        @keyframes pulse-pink { 0% { box-shadow: 0 0 5px var(--neon-pink); } 50% { box-shadow: 0 0 15px var(--neon-pink); } 100% { box-shadow: 0 0 5px var(--neon-pink); } }
+        
+        /* NEON GRÜN BUTTON FÜR REGELN */
+        .btn-rules-small { 
+            position: absolute; top: 15px; right: 20px; 
+            background: rgba(0, 0, 0, 0.5); 
+            border: 2px solid var(--neon-green); 
+            color: #ffffff; 
+            padding: 12px 20px; border-radius: 10px; font-size: 16px; cursor: pointer; text-transform: uppercase; 
+            font-weight: bold; animation: pulse-green 1.5s infinite; 
+            box-shadow: 0 0 15px var(--neon-green), inset 0 0 10px var(--neon-green); 
+            font-family: 'Impact', sans-serif; letter-spacing: 1px; text-shadow: 0 0 5px var(--neon-green);
+        }
+        @keyframes pulse-green { 
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--neon-green), inset 0 0 5px var(--neon-green); } 
+            50% { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-green), inset 0 0 15px var(--neon-green); } 
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--neon-green), inset 0 0 5px var(--neon-green); } 
+        }
+
         .rule-pulse-box { border: 2px solid #ef4444 !important; animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0px #ef4444; } 50% { box-shadow: 0 0 10px #ef4444; } 100% { box-shadow: 0 0 0px #ef4444; } }
 
@@ -65,11 +81,6 @@
         .timer-text { font-size: 56px; font-family: 'Impact', sans-serif; letter-spacing: 4px; }
         .timer-progress-bg { width: 100%; height: 24px; background: #1a1a24; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
         .timer-progress-bar { height: 100%; width: 100%; transition: width 1s linear; }
-
-        /* Integrierte Regeln & Checkout Popup Overlays im echten Neon-Look */
-        .popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 14, 0.96); z-index: 20000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-        .popup-content { background: var(--form-bg); border: 3px solid var(--neon-cyan); padding: 40px; border-radius: 20px; max-width: 550px; width: 90%; color: white; text-align: left; box-shadow: 0 0 30px rgba(0, 242, 254, 0.3), inset 0 0 15px rgba(0, 242, 254, 0.1); position: relative; }
-        .popup-close { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 32px; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); font-family: sans-serif; }
     </style>
 </head>
 <body>
@@ -100,7 +111,7 @@
             </div>
 
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
-                <button class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen</button>
+                <button type="button" class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen & Infos</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 20px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6);"></div>
 
@@ -142,13 +153,21 @@
                         
                         <div class="form-group">
                             <label style="color: var(--neon-cyan);">Bestätigung</label>
-                            <label class="checkbox-group">
-                                <input type="checkbox" required>
-                                <span class="checkbox-label">Ich besitze alle Rechte an diesem Song.</span>
+                            
+                            <label class="checkbox-group" style="cursor: pointer; align-items: center;">
+                                <input type="checkbox" required style="width: 20px; height: 20px; margin: 0; flex-shrink: 0;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-family: 'Impact', sans-serif; font-size: 18px; letter-spacing: 1px;">ICH BESITZE ALLE RECHTE AN DIESEM SONG.</span>
+                                    <span style="font-family: sans-serif; font-size: 13px; color: var(--text-muted); line-height: 1.4;">Ich bestätige hiermit, dass ich alle Rechte an dem Song besitze und keine fremden Samples verwende.</span>
+                                </div>
                             </label>
-                            <label class="checkbox-group rule-pulse-box" style="background-color: rgba(239, 68, 68, 0.08);">
-                                <input type="checkbox" required>
-                                <span class="checkbox-label" style="color: #ffcccc;">Keine Fake-Namen! Unfaires Verhalten führt zum <strong>Permabann!</strong></span>
+                            
+                            <label class="checkbox-group rule-pulse-box" style="background-color: rgba(239, 68, 68, 0.08); cursor: pointer; align-items: center; margin-top: 15px;">
+                                <input type="checkbox" required style="width: 20px; height: 20px; margin: 0; flex-shrink: 0;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-family: 'Impact', sans-serif; font-size: 18px; letter-spacing: 1px; color: #ffcccc;">KEINE FAKE-NAMEN! UNFAIRES VERHALTEN FÜHRT ZUM PERMABANN!</span>
+                                    <span style="font-family: sans-serif; font-size: 13px; color: #ff9999; line-height: 1.4;">Wer versucht das System mit Fake-Accounts oder erfundenen Namen auszutricksen, wird permanent von allen Mondo Mando Angeboten ausgeschlossen.</span>
+                                </div>
                             </label>
                         </div>
                         
@@ -181,17 +200,26 @@
         </div>
     </div>
 
-    <div id="rulesPopup" class="popup-overlay">
-        <div class="popup-content">
-            <span class="popup-close" onclick="document.getElementById('rulesPopup').style.display='none'">&times;</span>
-            <h2 style="text-transform: uppercase; margin-top: 0; font-size: 28px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 12px; margin-bottom: 25px;">STREAM-REGELN</h2>
-            <div style="font-family: sans-serif; font-size: 18px; line-height: 1.8; color: #ffffff;">
-                <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(142, 142, 159, 0.2); padding-bottom: 10px;"><strong style="color: var(--neon-gold);">1. Zeitlimit:</strong> 90 Minuten Gesamtsendezeit pro Live-Stream.</p>
-                <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(142, 142, 159, 0.2); padding-bottom: 10px;"><strong style="color: var(--neon-gold);">2. Forbidden Genres:</strong> Schlager, Hardstyle, Hardcore & Metal sind absolut verboten.</p>
-                <p style="margin-bottom: 15px; border-bottom: 1px solid rgba(142, 142, 159, 0.2); padding-bottom: 10px;"><strong style="color: var(--neon-gold);">3. Song-Limit:</strong> Maximal 2 Songs pro Künstler gleichzeitig in der Warteschlange.</p>
-                <p style="margin-bottom: 15px;"><strong style="color: var(--neon-gold);">4. Fair Play:</strong> Keine Fake-Namen! Unfaires Verhalten führt unweigerlich zum direkten <strong style="color: var(--neon-pink); text-shadow: 0 0 5px var(--neon-pink);">Permabann!</strong></p>
+    <div id="rulesPopup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 14, 0.95); z-index: 20000; justify-content: center; align-items: center; backdrop-filter: blur(8px); overflow-y: auto; padding: 20px; box-sizing: border-box;">
+        <div style="background: var(--form-bg); border: 3px solid var(--neon-green); padding: 40px; border-radius: 16px; max-width: 650px; width: 100%; color: white; position: relative; box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);">
+            <span onclick="document.getElementById('rulesPopup').style.display='none'" style="position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 36px; color: var(--neon-green); font-family: sans-serif;">&times;</span>
+            <h2 style="color: var(--neon-green); border-bottom-color: var(--neon-green); font-size: 32px; text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);">STREAM-REGELN & INFOS</h2>
+            
+            <div style="font-family: sans-serif; font-size: 16px; line-height: 1.6; color: #ccc; text-align: left;">
+                <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">⏱️ 1. Sendezeit & Ablauf</h3>
+                <p style="margin-top: 0; margin-bottom: 15px;">Der Stream hat einen festen Topf von <strong>90 Minuten</strong>. Ist die Zeit voll, schließt die Liste. Einreichungen werden live im Stream angehört und bewertet.</p>
+                
+                <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">🏆 2. Das Voting-System</h3>
+                <p style="margin-top: 0; margin-bottom: 15px;">Nachdem alle Songs gehört wurden, startet das <strong>Live-Voting</strong>! Ihr entscheidet mit eurem Voting-Code, welcher Track der „Hit des Tages“ wird und in die ewige Hall of Fame einzieht.</p>
+
+                <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">🚀 3. Premium Features</h3>
+                <p style="margin-top: 0; margin-bottom: 15px;">Nach dem Einsenden erhältst du deinen Voting-Code. Damit kannst du dir im Shop Vorteile sichern: <strong>Platz 1 Boost</strong> (dein Song läuft direkt als Nächstes), den <strong>After Hours Pass</strong> (dein Song wird auch nach Ablauf der 90 Min. noch gespielt) oder den <strong>Songwürfel</strong>.</p>
+
+                <h3 style="color: var(--neon-pink); margin-bottom: 5px;">🚫 4. Verbote & Fair Play</h3>
+                <p style="margin-top: 0; margin-bottom: 15px;"><strong>Gesperrte Genres:</strong> Schlager, Hardstyle, Hardcore & Metal sind strikt verboten.<br><strong>Fake-Accounts:</strong> Wer sich unfaire Vorteile durch Fake-Namen verschafft, kassiert einen <strong>Permabann</strong> für alle Mondo Mando Formate!</p>
             </div>
-            <button onclick="document.getElementById('rulesPopup').style.display='none'" style="width: 100%; padding: 18px; font-size: 22px; text-transform: uppercase; color: #ffffff; border: none; border-radius: 10px; cursor: pointer; letter-spacing: 2px; font-family: 'Impact', sans-serif; box-shadow: 0 0 15px var(--neon-pink); background: var(--neon-pink); margin-top: 25px;">VERSTANDEN</button>
+            
+            <button type="button" onclick="document.getElementById('rulesPopup').style.display='none'" style="width: 100%; padding: 18px; background: var(--neon-green); border: none; color: black; font-family: 'Impact', sans-serif; font-size: 22px; letter-spacing: 2px; border-radius: 8px; cursor: pointer; margin-top: 20px; text-transform: uppercase; box-shadow: 0 0 15px var(--neon-green);">ICH HABE VERSTANDEN</button>
         </div>
     </div>
 
@@ -294,19 +322,20 @@
             const linkAfterHours = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/434396c0-e721-45e1-8751-f5d39d3a4632";
             const linkDice = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/65229fc8-af91-4ef7-a20c-738d5933a25a";
             
+            // HINZUGEFÜGTES NEON-STYLING FÜR DIE EINREICHUNGS-BESTÄTIGUNG
             const overlay = document.createElement('div');
-            overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10,10,14,0.96); z-index:10000; display:flex; justify-content:center; align-items:center; padding: 20px; overflow-y: auto; backdrop-filter: blur(8px); font-family: 'Impact', 'Arial Black', sans-serif;";
-            overlay.innerHTML = `<div style="background: var(--form-bg); border: 3px solid var(--neon-gold); padding: 40px; border-radius: 20px; text-align: center; max-width: 550px; width: 100%; box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.2); color: white;">
-                <h1 style="color: var(--neon-gold); font-size: 38px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.7); margin-top: 0; letter-spacing: 2px; text-transform: uppercase;">TRACK EINGEREICHT!</h1>
-                <p style="font-family: sans-serif; font-size: 18px; color: #ccc; margin-bottom: 5px;">Dein Voting-Code:</p>
-                <div style="background: #050507; padding: 20px; font-size: 45px; color: var(--neon-cyan); letter-spacing: 10px; margin: 15px 0; border: 2px dashed var(--neon-cyan); text-shadow: 0 0 12px rgba(0, 242, 254, 0.9); font-weight: bold; border-radius: 8px;">${resData.voteCode}</div>
-                <hr style="border: 0; border-top: 1px solid rgba(142, 142, 159, 0.3); margin: 25px 0;">
-                <div style="display:flex; flex-direction:column; gap:15px;">
-                    <a href="${linkBoost}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: var(--neon-cyan); color: black; padding: 18px; text-decoration: none; border-radius: 10px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px var(--neon-cyan); font-weight: bold; transition: transform 0.2s;">🚀 PLATZ 1 BOOST</a>
-                    <a href="${linkAfterHours}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: #7000ff; color: white; padding: 18px; text-decoration: none; border-radius: 10px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px #7000ff; font-weight: bold; border: 1px solid #b577ff; transition: transform 0.2s;">🌙 AFTER HOURS PASS</a>
-                    <a href="${linkDice}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: var(--neon-pink); color: white; padding: 18px; text-decoration: none; border-radius: 10px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px var(--neon-pink); font-weight: bold; transition: transform 0.2s;">🎲 SONGWÜRFEL</a>
+            overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10,10,14,0.96); z-index:10000; display:flex; justify-content:center; align-items:center; padding: 20px; overflow-y: auto; backdrop-filter: blur(8px); box-sizing: border-box;";
+            overlay.innerHTML = `<div style="background: rgba(19, 19, 26, 0.95); border: 3px solid var(--neon-gold); padding: 40px; border-radius: 20px; text-align: center; max-width: 550px; width: 100%; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); color: white; font-family: 'Impact', sans-serif;">
+                <h1 style="color: var(--neon-gold); font-size: 36px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); margin-top: 0; letter-spacing: 2px;">TRACK EINGEREICHT!</h1>
+                <p style="font-family: sans-serif; font-size: 16px; color: #ccc; margin-bottom: 5px; text-transform: uppercase;">Dein Voting-Code:</p>
+                <div style="background: #000; padding: 20px; font-size: 45px; color: var(--neon-cyan); letter-spacing: 10px; margin: 15px 0; border: 2px dashed var(--neon-cyan); text-shadow: 0 0 12px rgba(0, 242, 254, 0.8); border-radius: 8px;">${resData.voteCode}</div>
+                <hr style="border: 0; border-top: 1px solid #2a2a35; margin: 25px 0;">
+                <div style="display:flex; flex-direction:column; gap:15px; font-family: 'Impact', sans-serif;">
+                    <a href="${linkBoost}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: var(--neon-cyan); color: black; padding: 18px; text-decoration: none; border-radius: 8px; font-size: 20px; text-transform: uppercase; box-shadow: 0 0 15px rgba(0, 242, 254, 0.6);">🚀 PLATZ 1 BOOST</a>
+                    <a href="${linkAfterHours}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: #7000ff; color: white; padding: 18px; text-decoration: none; border-radius: 8px; font-size: 20px; text-transform: uppercase; box-shadow: 0 0 15px rgba(112, 0, 255, 0.6);">🌙 AFTER HOURS PASS</a>
+                    <a href="${linkDice}?checkout[custom][voteCode]=${resData.voteCode}" target="_blank" style="background: var(--neon-pink); color: white; padding: 18px; text-decoration: none; border-radius: 8px; font-size: 20px; text-transform: uppercase; box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);">🎲 SONGWÜRFEL</a>
                 </div>
-                <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 15px; color: white; margin-top: 30px; width: 100%; border-radius: 10px; font-size: 18px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase;">SCHLIESSEN</button>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 18px; color: white; margin-top: 25px; width: 100%; border-radius: 8px; font-size: 18px; cursor: pointer; text-transform: uppercase; font-family: 'Impact', sans-serif;">SCHLIESSEN</button>
             </div>`;
             document.body.appendChild(overlay);
             document.getElementById('songForm').reset(); loadQueue();
@@ -318,7 +347,7 @@
         let target = new Date(); target.setHours(19, 0, 0, 0); let daysToAdd = (7 - currentDay) % 7;
         if (currentDay === 0) {
             if (currentHour >= 19 && (currentHour < 21 || (currentHour === 21 && currentMin < 10))) {
-                document.getElementById('live-badge').style.display = "inline-block"; document.getElementById('countdown').innerText = "JETZT LIVE!"; return;
+                document.getElementById('live-badge').style.display = "inline-block"; document.getElementById('stream-status-title').innerText = " SHOW IS LIVE"; document.getElementById('countdown').innerText = "JETZT EINSCHALTEN!"; return;
             } else if (currentHour >= 21) { daysToAdd = 7; }
         }
         target.setDate(now.getDate() + daysToAdd); const diff = target - now;
