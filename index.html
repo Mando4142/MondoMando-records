@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mondo Mando Records - Song Einsenden & Infos</title>
+    <title>Mondo Mando Records - Song Einsenden</title>
     <style>
         :root {
             --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --neon-green: #22c55e;
@@ -17,34 +17,14 @@
         .card.pink-glow { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.2), inset 0 0 15px rgba(255, 0, 127, 0.1); }
         .card.gold-glow { border-color: var(--neon-gold); box-shadow: 0 0 25px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.1); }
         h2 { text-transform: uppercase; margin-top: 0; font-size: 24px; letter-spacing: 2px; color: #ffffff; text-shadow: 0 0 8px var(--neon-cyan); border-bottom: 3px solid var(--neon-pink); padding-bottom: 8px; margin-bottom: 20px; transition: all 0.5s ease; }
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .calendar-header button { background: rgba(0,242,254,0.1); border: 1px solid var(--neon-cyan); border-radius: 4px; padding: 5px 15px; color: var(--neon-cyan); font-size: 18px; cursor: pointer; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
-        .cal-day-header { font-family: sans-serif; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .cal-day { padding: 10px 5px; background: rgba(5,5,7,0.8); border: 1px solid #2a2a35; border-radius: 6px; font-family: sans-serif; font-weight: bold; cursor: pointer; }
-        .cal-day.is-sunday { border-color: var(--neon-pink); color: var(--neon-pink); background: rgba(255,0,127,0.1); }
-        .cal-day.has-hits { background: rgba(255, 215, 0, 0.15); border-color: var(--neon-gold); color: var(--neon-gold); box-shadow: 0 0 8px rgba(255,215,0,0.4); }
-        .cal-day.is-selected { background: var(--neon-gold); color: black; border-color: white; box-shadow: 0 0 15px white; transform: scale(1.1); z-index: 2; }
         
-        .btn-rules-small {
-            position: absolute; top: 15px; right: 20px;
-            background: rgba(255, 0, 127, 0.2); border: 1px solid var(--neon-pink);
-            color: var(--neon-pink); padding: 5px 12px; border-radius: 6px;
-            font-size: 12px; cursor: pointer; text-transform: uppercase;
-            animation: pulse-pink 2s infinite; font-family: sans-serif;
-        }
-        @keyframes pulse-pink { 0% { box-shadow: 0 0 5px var(--neon-pink); } 50% { box-shadow: 0 0 15px var(--neon-pink); } 100% { box-shadow: 0 0 5px var(--neon-pink); } }
-        
+        /* Pulsierender roter Rahmen für die Bann-Warnung */
         .rule-pulse-box {
             border: 2px solid #ef4444 !important;
             animation: pulse-red 1.5s infinite;
         }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0px #ef4444; } 50% { box-shadow: 0 0 10px #ef4444; } 100% { box-shadow: 0 0 0px #ef4444; } }
 
-        .info-link-container { display: flex; justify-content: center; margin-bottom: 25px; }
-        .btn-info-page { background: rgba(34, 197, 94, 0.1); border: 2px solid var(--neon-green); color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 30px; font-size: 15px; font-family: sans-serif; font-weight: bold; text-transform: uppercase; animation: greenPulse 2s infinite alternate; }
-        @keyframes greenPulse { from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); } to { box-shadow: 0 0 18px rgba(34, 197, 94, 0.7); } }
-        
         .status-container { display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-weight: bold; }
         .badge-live { background-color: var(--neon-pink); color: white; padding: 6px 14px; border-radius: 4px; font-size: 16px; box-shadow: 0 0 15px var(--neon-pink); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 25px var(--neon-pink); } 100% { transform: scale(1); opacity: 0.8; } }
@@ -128,10 +108,6 @@
                 <button id="btn-live-view" style="display:none; width: 100%; margin-top: 15px; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 6px; font-family: 'Impact', sans-serif; cursor: pointer; font-size: 16px;" onclick="resetToLiveView()">🔴 ZURÜCK ZUR LIVE-SHOW</button>
             </div>
 
-            <div class="info-link-container">
-                <a href="/info" class="btn-info-page">📖 Stream-Ablauf & Regeln anzeigen 🟢</a>
-            </div>
-
             <div class="card">
                 <div class="status-container">
                     <div>
@@ -147,7 +123,6 @@
             </div>
 
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
-                <button class="btn-rules-small" onclick="window.location.href='/info'">Regeln lesen</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 20px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6);"></div>
 
@@ -509,6 +484,7 @@
         } else {
             errBox.style.display = "none"; 
             
+            // DIE EXAKTEN LEMON SQUEEZY SHARE-LINKS AUS DEINEM DASHBOARD:
             const linkBoost = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/4fc302b9-f53e-4994-8612-11fd40e6c5d3";
             const linkAfterHours = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/434396c0-e721-45e1-8751-f5d39d3a4632";
             const linkDice = "https://mondomandorecords.lemonsqueezy.com/checkout/buy/65229fc8-af91-4ef7-a20c-738d5933a25a";
