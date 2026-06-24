@@ -43,7 +43,13 @@ app.post('/api/webhook/stripe', express.raw({ type: 'application/json' }), (req,
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+    setHeaders: (res, filePath) => {
+        if (/\.(png|jpg|jpeg|webp|gif)$/i.test(filePath)) {
+            res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        }
+    }
+}));
 
 const DB_FILE = path.join(__dirname, 'database.json');
 let dbData = {
