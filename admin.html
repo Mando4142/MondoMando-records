@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mondo Mando - Admin Schaltzentrale</title>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js">
+    async function resetViewerVotingCodes() {
+        if (!confirm('Alle TikTok-Zuschauer-Codes für den nächsten Stream löschen?')) return;
+        await fetch('/api/admin/voting/reset-viewer-codes', { method: 'POST', headers: {'Authorization': token} });
+        alert('✅ Zuschauer-Codes wurden gelöscht.');
+        loadAdminQueue();
+    }
+
+</script>
     <style>
         :root { --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --text-main: #ffffff; --form-bg: rgba(19, 19, 26, 0.9); }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Impact', 'Arial Black', sans-serif; color: var(--text-main); overflow: hidden; }
@@ -189,14 +197,18 @@
             }
 
             const vBox = document.getElementById('admin-voting-controls');
+            const viewerStats = data.viewerCodeStats || { total: 0, used: 0, open: 0 };
+            const viewerStatsHtml = `<div style="font-family:sans-serif; font-size:14px; margin-bottom:10px; padding:10px; border:1px dashed var(--neon-cyan); border-radius:10px; background:rgba(0,242,254,0.08); color:#dffcff;">
+                🎟️ TikTok-Zuschauer-Codes: <strong>${viewerStats.total}</strong> total | <strong>${viewerStats.used}</strong> benutzt | <strong>${viewerStats.open}</strong> offen
+            </div>`;
             if (data.votingPhase === 'inactive') {
                 if (!document.getElementById('start-voting-btn')) {
-                    vBox.innerHTML = `<button id="start-voting-btn" class="btn-voting-action" onclick="startVoting()">🔴 VOTING STARTEN (4 MIN)</button>`;
+                    vBox.innerHTML = viewerStatsHtml + `<button id="start-voting-btn" class="btn-voting-action" onclick="startVoting()">🔴 VOTING STARTEN (4 MIN)</button><button class="btn-voting-action" style="background:#0ea5e9; box-shadow:0 0 12px #0ea5e9; margin-top:10px;" onclick="resetViewerVotingCodes()">🎟️ ZUSCHAUER-CODES FÜR NEUEN STREAM LÖSCHEN</button>`;
                 }
                 if(adminTimerInterval) { clearInterval(adminTimerInterval); adminTimerInterval = null; }
             } else if (data.votingPhase === 'active') {
                 if (!document.getElementById('admin-timer-text')) {
-                    vBox.innerHTML = `
+                    vBox.innerHTML = viewerStatsHtml + `
                         <div id="admin-timer-text" style="font-size:48px; text-align:center; margin-bottom:15px; font-family:'Impact', sans-serif;">04:00</div>
                         <div style="display:flex; gap:10px;">
                             <button class="btn-voting-action" style="background:#22c55e; box-shadow:0 0 15px #22c55e; flex:2;" onclick="resolveVoting()">✅ MANUELL BEENDEN</button>
@@ -240,7 +252,7 @@
                 const featureMeta = {
                     priority_boost: { cls: 'boost', title: '🚀💎 Platz 1 Push', desc: 'Song wurde bezahlt und auf Platz 1 geschoben.' },
                     after_hours: { cls: 'after', title: '🌙💎 After Hours', desc: 'After-Hours-Pass gekauft / freigeschaltet.' },
-                    song_dice: { cls: 'dice', title: '🎲💎 Song Würfel', desc: 'Zufälliger Song wurde gewählt und auf Platz 1 gepusht.' }
+                    song_dice: { cls: 'dice', title: '🎲💎 Song Würfel', desc: 'Zufälliger Song aus der Warteliste wurde gewählt und direkt auf Platz 1 gepusht.' }
                 };
 
                 const recentHtml = recentExtras.length
