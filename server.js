@@ -68,13 +68,47 @@ let dbData = {
     buyerBonusUsage: {},
     afterHoursPasses: {},
     processedStripeSessions: {},
-    bonusAnnouncements: []
+    bonusAnnouncements: [],
+    viewerVoteCodes: {},
+    viewerDeviceCodes: {}
 };
 
 let votingTimeout = null;
 
 function generateVoteCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function getClientIp(req) {
+    const forwarded = req.headers['x-forwarded-for'];
+    if (forwarded) return String(forwarded).split(',')[0].trim();
+    return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
+function createUniqueVotingCode() {
+    let code = generateVoteCode();
+    let safety = 0;
+    while (
+        safety < 60 &&
+        (
+            (dbData.viewerVoteCodes && dbData.viewerVoteCodes[code]) ||
+            dbData.songQueue.some(song => song.voteCode === code)
+        )
+    ) {
+        code = generateVoteCode();
+        safety++;
+    }
+    return code;
+}
+
+function getViewerCodeStats() {
+    const codes = Object.values(dbData.viewerVoteCodes || {});
+    const used = codes.filter(c => c.used).length;
+    return {
+        total: codes.length,
+        used,
+        open: Math.max(0, codes.length - used)
+    };
 }
 
 if (fs.existsSync(DB_FILE)) {
@@ -89,6 +123,8 @@ if (fs.existsSync(DB_FILE)) {
         if (!dbData.afterHoursPasses) dbData.afterHoursPasses = {};
         if (!dbData.processedStripeSessions) dbData.processedStripeSessions = {};
         if (!dbData.bonusAnnouncements) dbData.bonusAnnouncements = [];
+        if (!dbData.viewerVoteCodes) dbData.viewerVoteCodes = {};
+        if (!dbData.viewerDeviceCodes) dbData.viewerDeviceCodes = {};
         
         dbData.songQueue = dbData.songQueue.map(song => {
             if (!song.id) song.id = "S-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -529,6 +565,7 @@ app.get('/api/queue', (req, res) => {
         historicalHits: dbData.historicalHits,
         systemOnline: dbData.systemOnline !== false,
         bonusAnnouncements: dbData.bonusAnnouncements || [],
+        viewerCodeStats: getViewerCodeStats(),
         paidExtrasSummary,
         recentPaidExtras,
         afterHoursPasses: Object.values(dbData.afterHoursPasses || {}).map(p => ({
@@ -596,6 +633,48 @@ app.post('/api/submit', (req, res) => {
     res.json({ success: true, voteCode: newCode, songId: newSong.id, afterHoursPassUsed: wantsAfterHours });
 });
 
+
+app.post('/api/voting-code', (req, res) => {
+    if (!dbData.viewerVoteCodes) dbData.viewerVoteCodes = {};
+    if (!dbData.viewerDeviceCodes) dbData.viewerDeviceCodes = {};
+
+    const deviceId = String(req.body.deviceId || '').trim().slice(0, 80);
+    const tiktokName = String(req.body.tiktokName || '').trim().slice(0, 40);
+
+    if (!deviceId || deviceId.length < 8) {
+        return res.status(400).json({ error: 'Dein Gerät konnte nicht erkannt werden. Bitte lade die Seite neu und versuche es nochmal.' });
+    }
+
+    const existingCode = dbData.viewerDeviceCodes[deviceId];
+    if (existingCode && dbData.viewerVoteCodes[existingCode]) {
+        const existing = dbData.viewerVoteCodes[existingCode];
+        if (tiktokName && !existing.tiktokName) existing.tiktokName = tiktokName;
+        saveToDB();
+        return res.json({ success: true, code: existingCode, reused: true });
+    }
+
+    const ip = getClientIp(req);
+    const ipCodeCount = Object.values(dbData.viewerVoteCodes).filter(c => c.ip === ip).length;
+    if (ipCodeCount >= 5) {
+        return res.status(429).json({ error: 'Zu viele Voting-Codes über dieselbe Verbindung. Bitte nicht mehrfach Codes holen.' });
+    }
+
+    const code = createUniqueVotingCode();
+    dbData.viewerVoteCodes[code] = {
+        code,
+        deviceId,
+        tiktokName,
+        ip,
+        createdAt: Date.now(),
+        used: false,
+        usedAt: null
+    };
+    dbData.viewerDeviceCodes[deviceId] = code;
+    saveToDB();
+
+    res.json({ success: true, code, reused: false });
+});
+
 app.post('/api/create-bonus-checkout', async (req, res) => {
     if (!stripe) return res.status(500).json({ error: 'Stripe ist noch nicht konfiguriert. STRIPE_SECRET_KEY fehlt in den Umgebungsvariablen.' });
 
@@ -644,17 +723,24 @@ app.post('/api/create-bonus-checkout', async (req, res) => {
 
 app.post('/api/vote', (req, res) => {
     if (dbData.votingPhase !== 'active') return res.status(400).json({ error: "Voting ist aktuell geschlossen!" });
-    
+
     const { voteCode, vote1, vote2 } = req.body;
     if (!voteCode || !vote1 || !vote2) return res.status(400).json({ error: "Fehlende Daten. Du brauchst 2 Stimmen und deinen Code!" });
     if (vote1 === vote2) return res.status(400).json({ error: "Du darfst nicht zweimal für denselben Song abstimmen!" });
 
     const codeUpper = voteCode.trim().toUpperCase();
+    const viewerCode = dbData.viewerVoteCodes && dbData.viewerVoteCodes[codeUpper];
     const voterSong = dbData.songQueue.find(s => s.voteCode === codeUpper);
-    
-    if (!voterSong) return res.status(400).json({ error: "Ungültiger Voting-Code!" });
+
+    if (!viewerCode && !voterSong) return res.status(400).json({ error: "Ungültiger Voting-Code!" });
     if (dbData.usedCodes[codeUpper]) return res.status(400).json({ error: "Dieser Voting-Code wurde bereits eingelöst!" });
-    if (vote1 === voterSong.id || vote2 === voterSong.id) return res.status(400).json({ error: "Du darfst nicht für deinen eigenen Song abstimmen!" });
+    if (viewerCode && viewerCode.used) return res.status(400).json({ error: "Dieser Voting-Code wurde bereits eingelöst!" });
+
+    // Nur Künstler mit eigenem Song-Code dürfen nicht für den eigenen Song stimmen.
+    // Zuschauer-Codes aus dem TikTok-Chat haben keinen eigenen Song und dürfen normal abstimmen.
+    if (voterSong && (vote1 === voterSong.id || vote2 === voterSong.id)) {
+        return res.status(400).json({ error: "Du darfst nicht für deinen eigenen Song abstimmen!" });
+    }
 
     const song1 = dbData.songQueue.find(s => s.id === vote1 && s.isHit);
     const song2 = dbData.songQueue.find(s => s.id === vote2 && s.isHit);
@@ -665,6 +751,13 @@ app.post('/api/vote', (req, res) => {
     dbData.votes[vote2] = (dbData.votes[vote2] || 0) + 1;
     dbData.usedCodes[codeUpper] = true;
 
+    if (viewerCode) {
+        viewerCode.used = true;
+        viewerCode.usedAt = Date.now();
+        viewerCode.vote1 = vote1;
+        viewerCode.vote2 = vote2;
+    }
+
     saveToDB();
     res.json({ success: true });
 });
@@ -672,6 +765,12 @@ app.post('/api/vote', (req, res) => {
 app.post('/api/admin/voting/start', checkAdminAuth, (req, res) => {
     dbData.votingPhase = 'active'; 
     dbData.votes = {}; dbData.usedCodes = {}; dbData.tiedSongs = [];
+    Object.values(dbData.viewerVoteCodes || {}).forEach(code => {
+        code.used = false;
+        code.usedAt = null;
+        delete code.vote1;
+        delete code.vote2;
+    });
     dbData.votingEndsAt = Date.now() + 4 * 60 * 1000; // 4 Minuten ab jetzt
     
     if(votingTimeout) clearTimeout(votingTimeout);
@@ -727,6 +826,15 @@ function finalizeWinner(songId) {
     dbData.votingPhase = 'inactive'; dbData.votes = {}; dbData.usedCodes = {}; dbData.tiedSongs = []; dbData.votingEndsAt = null;
     saveToDB();
 }
+
+
+app.post('/api/admin/voting/reset-viewer-codes', checkAdminAuth, (req, res) => {
+    dbData.viewerVoteCodes = {};
+    dbData.viewerDeviceCodes = {};
+    dbData.usedCodes = {};
+    saveToDB();
+    res.json({ success: true });
+});
 
 app.post('/api/admin/auth', (req, res) => {
     const { password } = req.body;
