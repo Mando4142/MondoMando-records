@@ -247,10 +247,12 @@ function markRandomSongDice(buyerEmail) {
     const pickedSong = candidates[Math.floor(Math.random() * candidates.length)];
     if (!pickedSong.bonusNotes) pickedSong.bonusNotes = [];
     pickedSong.isDice = true;
+    pickedSong.isBoosted = true;
     pickedSong.diceSelectedAt = Date.now();
     pickedSong.diceBuyerEmail = cleanBuyerEmail(buyerEmail);
-    pickedSong.bonusNotes.push('🎲💎 Vom Song-Würfel zufällig ausgewählt');
-    addBonusAnnouncement(`🎲💎 SONG-WÜRFEL: ${pickedSong.artist} - ${pickedSong.title} wurde zufällig aus der Warteliste ausgewählt.`);
+    pickedSong.bonusNotes.push('🎲💎 Song-Würfel: zufällig ausgewählt und direkt auf Platz 1 gepusht');
+    moveSongToTop(pickedSong.id);
+    addBonusAnnouncement(`🎲💎 SONG-WÜRFEL: ${pickedSong.artist} - ${pickedSong.title} wurde zufällig ausgewählt und direkt auf Platz 1 gepusht.`);
     return { ok: true, songId: pickedSong.id };
 }
 
