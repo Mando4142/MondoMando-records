@@ -10,8 +10,8 @@
             --neon-orange: #ff5500; --text-main: #ffffff; --text-muted: #8e8e9f; --form-bg: rgba(19, 19, 26, 0.85);
         }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Impact', 'Arial Black', sans-serif; color: var(--text-main); overflow: hidden; background:#050508; }
-        body { background-image: url('studio_bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; }
-        .studio-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('studio_bg.jpg'); background-size: cover; background-position: center; filter: brightness(0.8); z-index: 0; pointer-events: none; }
+        body { background:#000000; background-image: none; }
+        .studio-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 0; pointer-events: none; }
         .overlay-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 40px 0; box-sizing: border-box; z-index: 1; }
         .interface-content { width: 100%; max-width: 650px; pointer-events: auto; }
         
@@ -37,7 +37,7 @@
         .calendar-header button { background: rgba(0,242,254,0.1); border: 1px solid var(--neon-cyan); border-radius: 4px; padding: 5px 15px; color: var(--neon-cyan); font-size: 18px; cursor: pointer; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
         .cal-day-header { font-family: sans-serif; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
-        .cal-day { padding: 10px 5px; background: rgba(5,5,7,0.8); border: 1px solid #2a2a35; border-radius: 6px; font-family: sans-serif; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .cal-day { padding: 10px 5px; background: rgba(5,5,7,A0.8); border: 1px solid #2a2a35; border-radius: 6px; font-family: sans-serif; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .cal-day:hover { background: rgba(255,255,255,0.1); }
         .cal-day.is-sunday { border-color: var(--neon-pink); color: var(--neon-pink); background: rgba(255,0,127,0.1); }
         .cal-day.has-hits { background: rgba(255, 215, 0, 0.15); border-color: var(--neon-gold); color: var(--neon-gold); }
@@ -245,7 +245,40 @@
             text-shadow: 0 0 8px rgba(255,255,255,0.20);
         }
 
+
+        /* SEITEN-TITEL / BESCHREIBUNG */
+        .site-intro-card {
+            text-align: center;
+            border-color: var(--neon-gold) !important;
+            box-shadow: 0 0 26px rgba(255,215,0,0.28), inset 0 0 16px rgba(255,215,0,0.10) !important;
+            background: rgba(5,5,8,0.78) !important;
+        }
+        .site-intro-logo {
+            display: block;
+            width: min(100%, 360px);
+            margin: 0 auto 18px auto;
+            height: auto;
+        }
+        .site-intro-title {
+            color: var(--neon-gold);
+            font-size: 34px;
+            letter-spacing: 2px;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(255,215,0,0.8), 0 0 24px rgba(255,0,127,0.28);
+            border-bottom: 3px solid var(--neon-pink);
+            padding-bottom: 10px;
+        }
+        .site-intro-text {
+            font-family: sans-serif;
+            color: #e5e7eb;
+            font-size: 15px;
+            line-height: 1.55;
+            margin: 0;
+        }
+
         #submit-error-box { color: #ffffff; background-color: #ef4444; border: 2px solid #b91c1c; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; text-align: center; font-family: sans-serif; font-weight: bold;}
+        #bonus-announcement-box { display:none; margin-bottom: 18px; border: 2px solid var(--neon-gold); border-radius: 14px; padding: 14px; background: rgba(255, 215, 0, 0.10); box-shadow: 0 0 18px rgba(255, 215, 0, 0.22); font-family: sans-serif; font-weight: 900; color: #fff7cc; line-height: 1.45; }
     </style>
 </head>
 <body>
@@ -253,6 +286,14 @@
     <div class="overlay-container">
         <div class="interface-content">
             
+            <!-- SEITEN-TITEL / BESCHREIBUNG -->
+            <div class="card site-intro-card">
+                <img src="mm_logo_title.png" alt="Mondo Mando Records Logo" class="site-intro-logo">
+                <h1 class="site-intro-title">Mondo Mando Records</h1>
+                <p class="site-intro-text">Auf dieser Seite kannst du deinen Song für den nächsten Mondo Mando Studio Stream einreichen. Deine Musik wird live angehört, bewertet und kann durch das Chat-Voting auf die Hit-Playlist kommen. Zusätzlich gibt es Gold-Pass-Boosts wie Platz-1-Push, After Hours und Song-Würfel, um deinem Track mehr Aufmerksamkeit im Stream zu geben.</p>
+            </div>
+
+
             <!-- STATUS & KALENDER CARD -->
             <div class="card" style="padding: 25px;">
                 <div class="status-header">
@@ -282,6 +323,8 @@
                 <h2 class="hof-week-title">👑 HALL OF FAME SONG DER WOCHE 👑</h2>
                 <div id="hof-player-content"></div>
             </div>
+
+            <div id="bonus-announcement-box"></div>
 
             <!-- HAUPTCARD: EINREICHEN, VOTING ODER VERLÄNGERUNG -->
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
@@ -437,9 +480,9 @@
                 <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">🚀 3. Premium Features / Extras</h3>
                 <div style="display:grid; gap:10px; margin-bottom:15px;">
                     <div style="background:rgba(0,242,254,0.08); border:1px solid var(--neon-cyan); border-radius:10px; padding:12px;"><strong style="color:var(--neon-cyan);">🚀 Song Push auf Platz 1 – CHF 6.20</strong><br>Dein Song wird bevorzugt auf Platz 1 der Warteliste gesetzt.<br><span style="color:#d9ffff; font-size:13px;"><strong>Limit:</strong> 1× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,85,0,0.10); border:1px solid var(--neon-orange); border-radius:10px; padding:12px;"><strong style="color:var(--neon-orange);">🌙 Stream-Verlängerung / After Hours – CHF 5.00</strong><br>Dein Song kann nach den regulären 90 Minuten in der Verlängerung berücksichtigt werden. Die gesamte Verlängerungszeit beträgt maximal 30 Minuten.<br><span style="color:#ffd8bf; font-size:13px;"><strong>Limit:</strong> 1× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50</strong><br>Dein Song kommt in den Song-Würfel und hat die Chance, zufällig ausgewählt oder besonders hervorgehoben zu werden.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.35); border-radius:10px; padding:12px; color:#f3f4f6;"><strong>Fair-Play-Regel:</strong> Pro Künstler gilt: Platz-1-Boost 1×, After Hours 1× und Song-Würfel maximal 2× pro Stream.</div>
+                    <div style="background:rgba(255,85,0,0.10); border:1px solid var(--neon-orange); border-radius:10px; padding:12px;"><strong style="color:var(--neon-orange);">🌙 Stream-Verlängerung / After Hours – CHF 5.00</strong><br>Nach erfolgreicher Zahlung wird dein Song automatisch für die Verlängerung markiert. Die gesamte Verlängerungszeit beträgt maximal 30 Minuten.<br><span style="color:#ffd8bf; font-size:13px;"><strong>Limit:</strong> 1× pro Künstler und Stream.</span></div>
+                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50</strong><br>Nach erfolgreicher Zahlung wählt der Song-Würfel automatisch einen zufälligen Song aus der Warteliste aus und markiert ihn deutlich.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2× pro Künstler und Stream.</span></div>
+                    <div style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.35); border-radius:10px; padding:12px; color:#f3f4f6;"><strong>Bonus-Automatik:</strong> Platz-1-Boost setzt automatisch auf Platz 1, After Hours markiert automatisch für die Verlängerung und der Song-Würfel wählt automatisch einen zufälligen Song. Limits: Platz-1-Boost 1×, After Hours 1× und Song-Würfel maximal 2× pro Stream.</div>
                 </div>
                 <p style="margin-top: 0; margin-bottom: 15px;">Bezahlen läuft sicher über Stripe. Die verfügbaren Zahlungsarten können je nach Gerät und Freischaltung angezeigt werden, z.B. TWINT, Apple Pay, Google Pay, Karte, Link oder Klarna.</p>
 
@@ -766,7 +809,7 @@
         try {
             const res = await fetch('/api/queue'); const data = await res.json();
             const queue = data.queue || []; const hallOfFame = data.hallOfFame || [];
-            serverHistoricalHits = data.historicalHits || {}; renderCalendar(); renderHallOfFamePlayer(hallOfFame); 
+            serverHistoricalHits = data.historicalHits || {}; renderCalendar(); renderHallOfFamePlayer(hallOfFame); renderBonusAnnouncements(data.bonusAnnouncements || []); 
             
             // ================== ARCHIV-ANSICHT ==================
             if (selectedArchiveDate) {
@@ -889,7 +932,7 @@
                     let badges = '';
                     if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀 BOOST</span>';
                     if (item.isAfterHours) badges += '<span style="background:#7000ff; color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; border: 1px solid #b577ff; box-shadow: 0 0 8px #7000ff;">🌙 AFTER HOURS</span>';
-                    if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 WÜRFEL</span>';
+                    if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 VOM SONG-WÜRFEL AUSGEWÄHLT</span>';
 
                     overtimeList.innerHTML += `
                     <div class="queue-item" style="border-color:var(--neon-orange); border-left-color:var(--neon-orange); background: rgba(255, 85, 0, 0.05); box-shadow: 0 0 10px rgba(255,85,0,0.1);">
@@ -897,6 +940,7 @@
                             <h4 style="margin:0 0 5px 0;">${platformIcon} ${item.artist} - ${item.title}</h4>
                             <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
                             <div style="margin-top:8px;">${badges}</div>
+                            ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲 Dieser Song wurde vom Song-Würfel ausgewählt!</div>' : ''}
                         </div>
                         <div style="text-align:right; font-weight:bold; color:var(--neon-orange); font-family: 'Impact', sans-serif; letter-spacing: 1px;">
                             ${timeText}
@@ -932,7 +976,7 @@
                 let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
                 let badges = '';
                 if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀 BOOST</span>';
-                if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 WÜRFEL</span>';
+                if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 VOM SONG-WÜRFEL AUSGEWÄHLT</span>';
 
                 activeList.innerHTML += `
                 <div class="queue-item" style="${item.isBoosted ? 'border-color:var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.3);' : ''}">
@@ -940,6 +984,7 @@
                         <h4 style="margin:0 0 5px 0;">${platformIcon} ${item.artist} - ${item.title}</h4>
                         <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
                         <div style="margin-top:8px;">${badges}</div>
+                        ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲 Dieser Song wurde vom Song-Würfel ausgewählt!</div>' : ''}
                     </div>
                     <div style="text-align:right; font-weight:bold; color:var(--neon-gold); font-family: 'Impact', sans-serif; letter-spacing: 1px;">
                         ${timeText}
@@ -954,6 +999,41 @@
         } catch(e) {}
     }
     
+    function renderBonusAnnouncements(announcements) {
+        const box = document.getElementById('bonus-announcement-box');
+        if (!box) return;
+        if (!announcements || announcements.length === 0) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+        box.style.display = 'block';
+        box.innerHTML = `<div style="color:var(--neon-gold); font-family:'Impact', sans-serif; font-size:18px; letter-spacing:1px; margin-bottom:6px;">⚡ LIVE BOOSTER AKTIV</div>` +
+            announcements.slice(0, 3).map(a => `<div>${a.text}</div>`).join('');
+    }
+
+    async function startBonusCheckout(feature, songId, btn) {
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.65';
+        btn.innerHTML = '⏳ STRIPE WIRD GEÖFFNET...';
+        try {
+            const res = await fetch('/api/create-bonus-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feature, songId })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            window.location.href = data.url;
+        } catch (err) {
+            alert('🚫 ' + err.message);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalText;
+        }
+    }
+
     async function addSongToServer(e) {
         e.preventDefault(); const artist = document.getElementById('artistName').value; const title = document.getElementById('songTitle').value;
         const songLink = document.getElementById('songLink').value; const min = parseInt(document.getElementById('durationMin').value) || 0; const sec = parseInt(document.getElementById('durationSec').value) || 0;
@@ -996,9 +1076,9 @@
                     </div>
                     <p style="font-family:sans-serif; color:#a7f3d0; line-height:1.35; margin:0 0 16px 0; font-size:13px;">Im Stripe-Checkout werden die verfügbaren Zahlungsarten automatisch angezeigt, z.B. TWINT, Apple Pay, Google Pay oder Karte.</p>
                     <div style="display:grid; gap:12px;">
-                        <a href="https://buy.stripe.com/fZu4gz6xsasDarv6ps43S00" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-cyan), #60efff); color:black; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-cyan);">🚀 Platz 1 Push – CHF 6.20<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.82;">Limit: 1× pro Künstler</span></a>
-                        <a href="https://buy.stripe.com/3cI6oH8FAeIT9nrg0243S01" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-orange), #ff9a3d); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-orange);">🌙 After Hours nach 90 Min – CHF 5.00<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Limit: 1× pro Künstler</span></a>
-                        <a href="https://buy.stripe.com/8x200jcVQ44f4378xA43S02" target="_blank" rel="noopener" style="display:block; text-decoration:none; background:linear-gradient(90deg, var(--neon-pink), #ff5cad); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-pink);">🎲 Song Würfel – CHF 3.50<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Limit: max. 2× pro Künstler</span></a>
+                        <button type="button" onclick="startBonusCheckout('priority_boost', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-cyan), #60efff); color:black; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-cyan); font-family:'Impact', sans-serif; cursor:pointer;">🚀 Platz 1 Push – CHF 6.20<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.82;">Automatisch: Song springt auf Platz 1 · Limit: 1×</span></button>
+                        <button type="button" onclick="startBonusCheckout('after_hours', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-orange), #ff9a3d); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-orange); font-family:'Impact', sans-serif; cursor:pointer;">🌙 After Hours nach 90 Min – CHF 5.00<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Automatisch: Song kommt in die Verlängerung · Limit: 1×</span></button>
+                        <button type="button" onclick="startBonusCheckout('song_dice', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-pink), #ff5cad); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-pink); font-family:'Impact', sans-serif; cursor:pointer;">🎲 Song Würfel – CHF 3.50<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Automatisch: Zufälliger Song wird ausgewählt · Limit: max. 2×</span></button>
                     </div>
                 </div>
                 <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 16px; color: white; margin-top: 18px; width: 100%; border-radius: 10px; font-size: 18px; cursor: pointer; text-transform: uppercase; font-family: 'Impact', sans-serif;">OHNE BONUS SCHLIESSEN</button>
