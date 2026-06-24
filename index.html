@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+7<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -276,6 +276,39 @@
             line-height: 1.55;
             margin: 0;
         }
+        .rules-info-section {
+            text-align: center;
+            border-color: var(--neon-orange) !important;
+            box-shadow: 0 0 22px rgba(255,85,0,0.28), inset 0 0 12px rgba(255,85,0,0.08) !important;
+            background: rgba(5,5,8,0.72) !important;
+            padding: 20px 24px !important;
+        }
+        .rules-info-section-title {
+            font-family: sans-serif;
+            font-weight: 900;
+            color: #ffd8bf;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 0 0 12px 0;
+        }
+        .btn-rules-main {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.55);
+            border: 2px solid var(--neon-orange);
+            color: #ffffff;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            animation: pulse-orange 1.8s infinite;
+            box-shadow: 0 0 12px var(--neon-orange), inset 0 0 8px rgba(255,85,0,0.45);
+            font-family: 'Impact', sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px var(--neon-orange);
+        }
 
         #submit-error-box { color: #ffffff; background-color: #ef4444; border: 2px solid #b91c1c; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; text-align: center; font-family: sans-serif; font-weight: bold;}
         #bonus-announcement-box { display:none; margin-bottom: 18px; border: 2px solid var(--neon-gold); border-radius: 14px; padding: 14px; background: rgba(255, 215, 0, 0.10); box-shadow: 0 0 18px rgba(255, 215, 0, 0.22); font-family: sans-serif; font-weight: 900; color: #fff7cc; line-height: 1.45; }
@@ -290,6 +323,12 @@
             <div class="card site-intro-card">
                 <img src="mondo_mando_logo.png" alt="Mondo Mando Records Logo" class="site-intro-logo">
 <p class="site-intro-text">Auf dieser Seite kannst du deinen Song für den nächsten Mondo Mando Studio Stream einreichen. Deine Musik wird live angehört, bewertet und kann durch das Chat-Voting auf die Hit-Playlist kommen. Zusätzlich gibt es Gold-Pass-Boosts wie Platz-1-Push, After Hours und Song-Würfel, um deinem Track mehr Aufmerksamkeit im Stream zu geben.</p>
+            </div>
+
+
+            <!-- REGELN & INFOS EIGENER ABSCHNITT -->
+            <div class="card rules-info-section">
+<button type="button" class="btn-rules-main" onclick="document.getElementById('rulesPopup').style.display='flex'">REGELN LESEN & INFOS</button>
             </div>
 
 
@@ -327,7 +366,6 @@
 
             <!-- HAUPTCARD: EINREICHEN, VOTING ODER VERLÄNGERUNG -->
             <div id="dynamic-main-card" class="card pink-glow" style="position: relative;">
-                <button type="button" class="btn-rules-small" onclick="document.getElementById('rulesPopup').style.display='flex'">Regeln lesen & Infos</button>
                 <h2 id="main-card-title">SONG EINREICHEN</h2>
                 <div id="offline-message" style="display:none; text-align:center; padding: 40px 20px; font-size: 24px; color: var(--neon-pink); border: 2px dashed var(--neon-pink); border-radius: 12px; background: rgba(0,0,0,0.6); text-transform: uppercase;">STREAM IST OFFLINE</div>
 
