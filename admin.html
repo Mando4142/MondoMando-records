@@ -40,7 +40,30 @@
         
         .section-title { font-size: 22px; color: #ffffff; margin: 25px 0 15px 0; text-transform: uppercase; }
         #login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#0b0b12; z-index:9999; display:flex; justify-content:center; align-items:center; }
-    </style>
+    
+        .extras-summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:12px; }
+        .extras-summary-card { border-radius:12px; padding:10px 12px; font-family:sans-serif; font-weight:800; color:white; border:1px solid rgba(255,255,255,.12); box-shadow: inset 0 0 12px rgba(255,255,255,.05); }
+        .extras-summary-card .label { font-size:12px; opacity:.9; text-transform:uppercase; letter-spacing:.6px; }
+        .extras-summary-card .value { font-size:24px; margin-top:4px; }
+        .extras-summary-card.total { background:linear-gradient(135deg,#6d28d9,#312e81); }
+        .extras-summary-card.boost { background:linear-gradient(135deg,#00e5ff,#0284c7); color:#001018; }
+        .extras-summary-card.after { background:linear-gradient(135deg,#7c3aed,#4c1d95); }
+        .extras-summary-card.dice { background:linear-gradient(135deg,#ec4899,#be185d); }
+        .extras-summary-card.pass { background:linear-gradient(135deg,#22c55e,#15803d); }
+        .extras-feed-item { padding:10px 12px; border-radius:10px; margin-top:8px; font-family:sans-serif; font-size:13px; font-weight:700; border:1px solid rgba(255,255,255,.08); }
+        .extras-feed-item.boost { background:rgba(0,229,255,.10); box-shadow:0 0 14px rgba(0,229,255,.14); color:#bff9ff; }
+        .extras-feed-item.after { background:rgba(124,58,237,.12); box-shadow:0 0 14px rgba(124,58,237,.18); color:#ead8ff; }
+        .extras-feed-item.dice { background:rgba(236,72,153,.12); box-shadow:0 0 14px rgba(236,72,153,.18); color:#ffd3eb; }
+        .admin-item.is-extra-paid { border-width:2px; }
+        .admin-item.extra-boost { box-shadow:0 0 0 2px rgba(0,229,255,.55), 0 0 18px rgba(0,229,255,.22); }
+        .admin-item.extra-after { box-shadow:0 0 0 2px rgba(124,58,237,.55), 0 0 18px rgba(124,58,237,.24); }
+        .admin-item.extra-dice { box-shadow:0 0 0 2px rgba(236,72,153,.55), 0 0 18px rgba(236,72,153,.24); }
+        .paid-note { margin:7px 0 0 0; font-family:sans-serif; font-size:12px; font-weight:800; }
+        .paid-note.boost { color:#9bf6ff; text-shadow:0 0 8px rgba(0,229,255,.45); }
+        .paid-note.after { color:#ead8ff; text-shadow:0 0 8px rgba(124,58,237,.45); }
+        .paid-note.dice { color:#ffd3eb; text-shadow:0 0 8px rgba(236,72,153,.45); }
+
+</style>
 </head>
 <body>
     <div id="login-overlay">
@@ -211,8 +234,37 @@
                 const passes = data.afterHoursPasses || [];
                 const openPasses = passes.filter(p => !p.used);
                 const usedPasses = passes.filter(p => p.used);
-                extrasList.innerHTML = `<div>🌙💎 Offene After-Hours-Pässe: <strong>${openPasses.length}</strong> | Eingelöst: <strong>${usedPasses.length}</strong></div>` +
-                    openPasses.slice(0, 5).map(p => `<div style="margin-top:6px; padding:8px; border:1px solid #a855f7; border-radius:8px; background:rgba(168,85,247,0.12);">🌙💎 Offen für: ${p.buyerEmail || 'unbekannt'}</div>`).join('');
+                const summary = data.paidExtrasSummary || {};
+                const recentExtras = data.recentPaidExtras || [];
+
+                const featureMeta = {
+                    priority_boost: { cls: 'boost', title: '🚀💎 Platz 1 Push', desc: 'Song wurde bezahlt und auf Platz 1 geschoben.' },
+                    after_hours: { cls: 'after', title: '🌙💎 After Hours', desc: 'After-Hours-Pass gekauft / freigeschaltet.' },
+                    song_dice: { cls: 'dice', title: '🎲💎 Song Würfel', desc: 'Zufälliger Song aus der Warteliste wurde gewählt.' }
+                };
+
+                const recentHtml = recentExtras.length
+                    ? recentExtras.map(entry => {
+                        const meta = featureMeta[entry.feature] || { cls: 'boost', title: '💎 Extra', desc: 'Stream-Extra gekauft.' };
+                        const song = entry.songId ? queue.find(q => q.id === entry.songId) : null;
+                        const songLine = song ? `<div style="margin-top:4px; font-weight:900;">🎵 ${song.artist} - ${song.title}</div>` : '';
+                        const buyerLine = entry.buyerEmail ? `<div style="margin-top:4px; opacity:.92;">Käufer: <strong>${entry.buyerEmail}</strong></div>` : '';
+                        return `<div class="extras-feed-item ${meta.cls}"><div>${meta.title}</div><div style="font-weight:600; margin-top:4px;">${meta.desc}</div>${songLine}${buyerLine}</div>`;
+                    }).join('')
+                    : '<div style="opacity:.8; font-family:sans-serif;">Noch keine bezahlten Stream-Extras vorhanden.</div>';
+
+                extrasList.innerHTML = `
+                    <div class="extras-summary-grid">
+                        <div class="extras-summary-card total"><div class="label">Bezahlte Extras total</div><div class="value">${summary.total || 0}</div></div>
+                        <div class="extras-summary-card boost"><div class="label">🚀 Platz 1 Push</div><div class="value">${summary.priorityBoost || 0}</div></div>
+                        <div class="extras-summary-card after"><div class="label">🌙 After Hours</div><div class="value">${summary.afterHours || 0}</div></div>
+                        <div class="extras-summary-card dice"><div class="label">🎲 Song Würfel</div><div class="value">${summary.songDice || 0}</div></div>
+                        <div class="extras-summary-card pass"><div class="label">Offene / Eingelöste Pässe</div><div class="value">${summary.openAfterHoursPasses || 0} / ${summary.usedAfterHoursPasses || 0}</div></div>
+                    </div>
+                    <div style="font-family:sans-serif; font-size:13px; font-weight:800; color:#d8b4fe; text-transform:uppercase; letter-spacing:.8px; margin-top:8px;">Neueste bezahlte Stream-Extras</div>
+                    ${recentHtml}
+                    ${openPasses.length ? `<div style="margin-top:12px; padding-top:10px; border-top:1px dashed rgba(255,255,255,.2); font-family:sans-serif;">${openPasses.map(p => `<div class="extras-feed-item after">🌙💎 Offener After-Hours-Pass für <strong>${p.buyerEmail || 'unbekannt'}</strong></div>`).join('')}</div>` : ''}
+                `;
             }
 
             if(hof.length === 0) { hofList.innerHTML = '<div style="color:#8e8e9f; text-align:center; padding: 10px;">Noch keine Champions.</div>'; }
@@ -253,13 +305,21 @@
                     let activeIndex = activeSongs.indexOf(item);
                     let titlePrefix = activeIndex === 0 ? '🔥 #1 DRAN 🔥 ' : `#${activeIndex + 1} `;
                     let itemStyleClass = item.isHit ? 'is-hit' : (activeIndex === 0 ? 'is-active-first' : '');
+                    const hasAnyExtra = item.isBoosted || item.isAfterHours || item.isDice;
+                    if (hasAnyExtra) itemStyleClass += ' is-extra-paid';
+                    if (item.isBoosted) itemStyleClass += ' extra-boost';
+                    if (item.isAfterHours) itemStyleClass += ' extra-after';
+                    if (item.isDice) itemStyleClass += ' extra-dice';
+                    const boostInfo = item.isBoosted && item.priorityBoostBuyerEmail ? `<p class="paid-note boost">🚀💎 Bezahlt von: ${item.priorityBoostBuyerEmail}</p>` : '';
+                    const afterInfo = item.isAfterHours && item.afterHoursBuyerEmail ? `<p class="paid-note after">🌙💎 After-Hours-Pass von: ${item.afterHoursBuyerEmail}</p>` : '';
+                    const diceInfo = item.isDice ? `<p class="paid-note dice">🎲💎 Dieser Song wurde zufällig vom Song-Würfel ausgewählt${item.diceBuyerEmail ? ` · gekauft von: ${item.diceBuyerEmail}` : ''}</p>` : '';
 
                     activeList.innerHTML += `<div class="admin-item ${itemStyleClass}">
                         <div style="display:flex; align-items:center;">
                             <div class="drag-handle">☰</div>
                             <div class="song-details">
                                 <h3 style="margin:0;">${titlePrefix}${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3>
-                                ${item.isDice ? '<p style="margin:6px 0 0 0; color:var(--neon-pink); font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲💎 Dieser Song wurde zufällig vom Song-Würfel ausgewählt!</p>' : ''}
+                                ${boostInfo}${afterInfo}${diceInfo}
                                 <p style="margin:5px 0 0 0;">Genre: ${item.genre} | ⏱️ ${min+2}:${sec < 10 ? '0':''}${sec} Min | Code: ${item.voteCode ? '✅' : '❌'}</p>
                             </div>
                         </div>
@@ -271,8 +331,9 @@
                         </div>
                     </div>`;
                 } else {
-                    doneList.innerHTML += `<div class="admin-item is-done-admin">
-                            <div class="song-details"><h3 style="margin:0;">${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3></div>
+                    const doneNotes = `${item.isBoosted && item.priorityBoostBuyerEmail ? `<p class="paid-note boost">🚀💎 Bezahlt von: ${item.priorityBoostBuyerEmail}</p>` : ''}${item.isAfterHours && item.afterHoursBuyerEmail ? `<p class="paid-note after">🌙💎 After-Hours-Pass von: ${item.afterHoursBuyerEmail}</p>` : ''}${item.isDice ? `<p class="paid-note dice">🎲💎 Vom Song-Würfel ausgewählt${item.diceBuyerEmail ? ` · gekauft von: ${item.diceBuyerEmail}` : ''}</p>` : ''}`;
+                    doneList.innerHTML += `<div class="admin-item is-done-admin ${item.isBoosted ? 'extra-boost is-extra-paid' : ''} ${item.isAfterHours ? 'extra-after is-extra-paid' : ''} ${item.isDice ? 'extra-dice is-extra-paid' : ''}">
+                            <div class="song-details"><h3 style="margin:0;">${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3>${doneNotes}</div>
                             <div class="actions-flex">
                                 <a href="${item.songLink}" target="_blank">${iconHtml}</a>
                                 <button class="btn-control" onclick="toggleDone(${index})">↩</button>
