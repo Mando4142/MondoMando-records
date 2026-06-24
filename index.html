@@ -331,6 +331,38 @@
             100% { transform: translateY(-50%) rotate(0deg) scale(1); }
         }
 
+        .stream-extra-buy-btn {
+            display: inline-block;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: sans-serif;
+            font-weight: 900;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 0 12px rgba(255,255,255,0.18);
+        }
+        .queue-number-badge {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:34px;
+            height:34px;
+            border-radius:999px;
+            background:#111827;
+            color:#fff;
+            border:2px solid var(--neon-cyan);
+            box-shadow:0 0 10px rgba(0,242,254,0.35);
+            font-weight:900;
+            margin-right:8px;
+        }
+        .queue-number-badge.first {
+            border-color:var(--neon-orange);
+            color:#fff;
+            background:rgba(255,85,0,0.25);
+            box-shadow:0 0 16px rgba(255,85,0,0.65);
+        }
+
         #submit-error-box { color: #ffffff; background-color: #ef4444; border: 2px solid #b91c1c; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; text-align: center; font-family: sans-serif; font-weight: bold;}
         #bonus-announcement-box { display:none; margin-bottom: 18px; border: 2px solid var(--neon-gold); border-radius: 14px; padding: 14px; background: rgba(255, 215, 0, 0.10); box-shadow: 0 0 18px rgba(255, 215, 0, 0.22); font-family: sans-serif; font-weight: 900; color: #fff7cc; line-height: 1.45; }
     </style>
@@ -468,31 +500,32 @@
             
             <!-- STREAM EXTRAS EIGENER ABSCHNITT -->
             <div class="card gold-glow">
-                    <div class="booster-preview-box">
-                        <div class="booster-preview-title">💸💎 Stream Extras</div>
-                        <p class="booster-preview-subtitle">Sichere dir nach dem Einsenden freiwillig einen Bonus für deinen Song. Erst Song einreichen, dann Booster sichern.</p>
-                        <div class="booster-preview-grid">
-                            <div class="booster-preview-item">
-                                <div class="booster-preview-name">🚀 Platz 1 Push – CHF 6.20</div>
-                                <div class="booster-preview-desc">Dein Song springt auf Platz 1 der Warteliste.</div>
-                                <span class="booster-preview-limit">Max. 1× pro Künstler & Stream</span>
-                            </div>
-                            <div class="booster-preview-item orange">
-                                <div class="booster-preview-name">🌙 After Hours – CHF 5.00</div>
-                                <div class="booster-preview-desc">Dein Song kann nach den 90 Minuten in der Verlängerung gespielt werden.</div>
-                                <span class="booster-preview-limit">Max. 1× pro Künstler & Stream</span>
-                            </div>
-                            <div class="booster-preview-item pink">
-                                <div class="booster-preview-name">🎲 Song Würfel – CHF 3.50</div>
-                                <div class="booster-preview-desc">Dein Song kommt in den Zufalls-Boost.</div>
-                                <span class="booster-preview-limit">Max. 2× pro Künstler & Stream</span>
-                            </div>
+                <div class="booster-preview-box">
+                    <div class="booster-preview-title">💸💎 Stream Extras</div>
+                    <p class="booster-preview-subtitle">Diese Extras sind nicht mehr an dein eigenes Einreichen gebunden. Jeder kann Stream Extras kaufen. Zum Schutz gilt: maximal 2 Extras pro Nutzer und Stream.</p>
+                    <div class="booster-preview-grid">
+                        <div class="booster-preview-item">
+                            <div class="booster-preview-name">🚀 Platz 1 Push – CHF 6.20</div>
+                            <div class="booster-preview-desc">Wähle einen Song aus der Warteliste und pushe ihn automatisch auf Platz 1.</div>
+                            <span class="booster-preview-limit">Max. 2× pro Nutzer & Stream</span><br>
+                            <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-cyan),#60efff); color:#001;" onclick="document.getElementById('waitlist-card').scrollIntoView({behavior:'smooth'});">🚀 Song in der Warteliste auswählen</button>
                         </div>
-                        <div class="booster-preview-locked">Erst Song einreichen, dann Booster sichern</div>
+                        <div class="booster-preview-item orange">
+                            <div class="booster-preview-name">🌙 After Hours – CHF 5.00</div>
+                            <div class="booster-preview-desc">Nach dem Kauf wirst du einmalig freigeschaltet, damit du deinen Song nach den freien 90 Minuten in der Verlängerungszeit einreichen kannst.</div>
+                            <span class="booster-preview-limit">Max. 2× pro Nutzer & Stream</span><br>
+                            <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-orange),#ff9a3d); color:white;" onclick="startBonusCheckout('after_hours', null, this)">🌙 After Hours kaufen</button>
+                        </div>
+                        <div class="booster-preview-item pink">
+                            <div class="booster-preview-name">🎲 Song Würfel – CHF 3.50</div>
+                            <div class="booster-preview-desc">Der Song-Würfel pickt zufällig einen Song aus der aktuellen Warteliste und markiert ihn sichtbar.</div>
+                            <span class="booster-preview-limit">Max. 2× pro Nutzer & Stream</span><br>
+                            <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-pink),#ff5cad); color:white;" onclick="startBonusCheckout('song_dice', null, this)">🎲 Song Würfel kaufen</button>
+                        </div>
                     </div>
-                    
+                    <div class="booster-preview-locked">Fair-Play: Pro Nutzer maximal 2 Stream Extras pro Stream. Beim Kauf wird deine E-Mail zur Limit-Kontrolle verwendet.</div>
+                </div>
             </div>
-
 
             <!-- DIE NEUE VERLÄNGERUNGS / AFTER HOURS KARTE -->
             <div id="overtime-card" class="card orange-glow" style="display:none; border-color: var(--neon-orange);">
@@ -541,12 +574,12 @@
                 </div>
                 <p style="margin-top: 0; margin-bottom: 15px;">Am Ende der Show startet das <strong>Voting (4 Minuten)</strong>. Mit deinem Voting-Code kannst du für deine Favoriten abstimmen.</p>
 
-                <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">🚀 3. Premium Features / Extras</h3>
+                <h3 style="color: var(--neon-cyan); margin-bottom: 5px;">💸💎 3. Stream Extras</h3>
                 <div style="display:grid; gap:10px; margin-bottom:15px;">
-                    <div style="background:rgba(0,242,254,0.08); border:1px solid var(--neon-cyan); border-radius:10px; padding:12px;"><strong style="color:var(--neon-cyan);">🚀 Song Push auf Platz 1 – CHF 6.20</strong><br>Dein Song wird bevorzugt auf Platz 1 der Warteliste gesetzt.<br><span style="color:#d9ffff; font-size:13px;"><strong>Limit:</strong> 1× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,85,0,0.10); border:1px solid var(--neon-orange); border-radius:10px; padding:12px;"><strong style="color:var(--neon-orange);">🌙 Stream-Verlängerung / After Hours – CHF 5.00</strong><br>Nach erfolgreicher Zahlung wird dein Song automatisch für die Verlängerung markiert. Die gesamte Verlängerungszeit beträgt maximal 30 Minuten.<br><span style="color:#ffd8bf; font-size:13px;"><strong>Limit:</strong> 1× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50</strong><br>Nach erfolgreicher Zahlung wählt der Song-Würfel automatisch einen zufälligen Song aus der Warteliste aus und markiert ihn deutlich.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2× pro Künstler und Stream.</span></div>
-                    <div style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.35); border-radius:10px; padding:12px; color:#f3f4f6;"><strong>Bonus-Automatik:</strong> Platz-1-Boost setzt automatisch auf Platz 1, After Hours markiert automatisch für die Verlängerung und der Song-Würfel wählt automatisch einen zufälligen Song. Limits: Platz-1-Boost 1×, After Hours 1× und Song-Würfel maximal 2× pro Stream.</div>
+                    <div style="background:rgba(0,242,254,0.08); border:1px solid var(--neon-cyan); border-radius:10px; padding:12px;"><strong style="color:var(--neon-cyan);">🚀 Song Push auf Platz 1 – CHF 6.20</strong><br>Du kannst einen Song aus der Warteliste auswählen und automatisch auf Platz 1 pushen.<br><span style="color:#d9ffff; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
+                    <div style="background:rgba(255,85,0,0.10); border:1px solid var(--neon-orange); border-radius:10px; padding:12px;"><strong style="color:var(--neon-orange);">🌙 Stream-Verlängerung / After Hours – CHF 5.00</strong><br>Nach dem Kauf wirst du einmalig freigeschaltet, damit du deinen Song nach den freien 90 Minuten in der Verlängerungszeit einreichen kannst. Die gesamte Verlängerungszeit beträgt maximal 30 Minuten.<br><span style="color:#ffd8bf; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
+                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50</strong><br>Der Song-Würfel pickt zufällig einen Song aus der aktuellen Warteliste und markiert ihn deutlich.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
+                    <div style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.35); border-radius:10px; padding:12px; color:#f3f4f6;"><strong>Fair-Play & Schutz:</strong> Stream Extras sind nicht auf Künstler beschränkt. Pro Nutzer sind maximal 2 Extras pro Stream erlaubt. Beim Kauf wird die E-Mail zur Limit-Kontrolle verwendet, damit niemand das System mit dauernden eigenen Pushs austrickst.</div>
                 </div>
                 <p style="margin-top: 0; margin-bottom: 15px;">Bezahlen läuft sicher über Stripe. Die verfügbaren Zahlungsarten können je nach Gerät und Freischaltung angezeigt werden, z.B. TWINT, Apple Pay, Google Pay, Karte, Link oder Klarna.</p>
 
@@ -563,6 +596,7 @@
     let calDate = new Date(); let serverHistoricalHits = {}; let selectedArchiveDate = null;
     let localTimerInterval = null; let localRemainingSeconds = 0;
     let currentHofPlayerKey = '';
+    let currentQueuePhase = 'base';
     let hofYoutubePlayer = null;
     let hofYoutubeMuted = true;
     let hofYoutubeApiLoading = false;
@@ -873,6 +907,7 @@
         try {
             const res = await fetch('/api/queue'); const data = await res.json();
             const queue = data.queue || []; const hallOfFame = data.hallOfFame || [];
+            currentQueuePhase = data.phase || 'base';
             serverHistoricalHits = data.historicalHits || {}; renderCalendar(); renderHallOfFamePlayer(hallOfFame); renderBonusAnnouncements(data.bonusAnnouncements || []); 
             
             // ================== ARCHIV-ANSICHT ==================
@@ -987,16 +1022,15 @@
                 overtimeList.innerHTML = '';
                 
                 let otAccTime = 0;
-                overtimeActiveSongs.forEach((item) => {
-                    let activeIndex = overtimeActiveSongs.indexOf(item);
-                    let timeText = activeIndex === 0 ? `NEXT UP` : `WARTEZEIT: ~${Math.floor(otAccTime/60)} MIN`;
+                overtimeActiveSongs.forEach((item, activeIndex) => {
+                    let timeText = activeIndex === 0 ? `🌙 NEXT UP` : `WARTEZEIT: ~${Math.floor(otAccTime/60)} MIN`;
                     otAccTime += item.duration + FEEDBACK_BUFFER_SEC;
                     
                     let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
                     let badges = '';
-                    if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀 BOOST</span>';
-                    if (item.isAfterHours) badges += '<span style="background:#7000ff; color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; border: 1px solid #b577ff; box-shadow: 0 0 8px #7000ff;">🌙 AFTER HOURS</span>';
-                    if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 VOM SONG-WÜRFEL AUSGEWÄHLT</span>';
+                    if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span>';
+                    if (item.isAfterHours) badges += '<span style="background:#7000ff; color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; border: 1px solid #b577ff; box-shadow: 0 0 8px #7000ff;">🌙💎 AFTER HOURS</span>';
+                    if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲💎 SONG-WÜRFEL</span>';
 
                     overtimeList.innerHTML += `
                     <div class="queue-item" style="border-color:var(--neon-orange); border-left-color:var(--neon-orange); background: rgba(255, 85, 0, 0.05); box-shadow: 0 0 10px rgba(255,85,0,0.1);">
@@ -1032,25 +1066,30 @@
             });
 
             let accTime = 0;
-            activeSongs.forEach((item) => {
-                let activeIndex = activeSongs.indexOf(item);
-                let timeText = activeIndex === 0 ? `NEXT UP` : `WARTEZEIT: ~${Math.floor(accTime/60)} MIN`;
+            activeSongs.forEach((item, activeIndex) => {
+                let timeText = activeIndex === 0 ? `🔥 PLATZ 1 / NEXT UP 🔥` : `#${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN`;
                 accTime += item.duration + FEEDBACK_BUFFER_SEC;
                 
                 let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
                 let badges = '';
-                if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀 BOOST</span>';
-                if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲 VOM SONG-WÜRFEL AUSGEWÄHLT</span>';
+                if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span>';
+                if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲💎 SONG-WÜRFEL</span>';
+                const firstSongInfo = activeIndex === 0 ? '<div style="margin-top:7px; color:var(--neon-orange); font-size:15px; font-weight:900; text-shadow:0 0 9px var(--neon-orange);">🔥 Dieser Song steht aktuell auf Platz 1 der Warteliste!</div>' : '';
+                const pushButton = activeIndex === 0
+                    ? '<button type="button" disabled style="margin-top:10px; opacity:0.65; background:#333; color:#fff; border:none; padding:9px 12px; border-radius:9px; font-weight:900;">🔥 Bereits Platz 1</button>'
+                    : `<button type="button" onclick="startBonusCheckout('priority_boost', '${item.id}', this)" style="margin-top:10px; background:linear-gradient(90deg,var(--neon-cyan),#60efff); color:black; border:none; padding:10px 12px; border-radius:9px; font-family:sans-serif; font-weight:900; cursor:pointer; box-shadow:0 0 12px rgba(0,242,254,0.35);">🚀💎 Auf Platz 1 pushen</button>`;
 
                 activeList.innerHTML += `
-                <div class="queue-item" style="${item.isBoosted ? 'border-color:var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.3);' : ''}">
+                <div class="queue-item" style="${activeIndex === 0 ? 'border-color:var(--neon-orange); border-left-color:var(--neon-orange); box-shadow:0 0 18px rgba(255,85,0,0.45); background:rgba(255,85,0,0.07);' : (item.isBoosted ? 'border-color:var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.3);' : '')}">
                     <div>
-                        <h4 style="margin:0 0 5px 0;">${platformIcon} ${item.artist} - ${item.title}</h4>
+                        <h4 style="margin:0 0 5px 0;"><span class="queue-number-badge ${activeIndex === 0 ? 'first' : ''}">${activeIndex + 1}</span>${platformIcon} ${item.artist} - ${item.title}</h4>
                         <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
                         <div style="margin-top:8px;">${badges}</div>
-                        ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲 Dieser Song wurde vom Song-Würfel ausgewählt!</div>' : ''}
+                        ${firstSongInfo}
+                        ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲💎 Dieser Song wurde zufällig vom Song-Würfel ausgewählt!</div>' : ''}
+                        ${pushButton}
                     </div>
-                    <div style="text-align:right; font-weight:bold; color:var(--neon-gold); font-family: 'Impact', sans-serif; letter-spacing: 1px;">
+                    <div style="text-align:right; font-weight:bold; color:${activeIndex === 0 ? 'var(--neon-orange)' : 'var(--neon-gold)'}; font-family: 'Impact', sans-serif; letter-spacing: 1px;">
                         ${timeText}
                     </div>
                 </div>`;
@@ -1076,25 +1115,53 @@
             announcements.slice(0, 3).map(a => `<div>${a.text}</div>`).join('');
     }
 
-    async function startBonusCheckout(feature, songId, btn) {
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.style.opacity = '0.65';
-        btn.innerHTML = '⏳ STRIPE WIRD GEÖFFNET...';
+    async function startBonusCheckout(feature, songId = null, btn = null) {
+        if (feature === 'priority_boost' && !songId) {
+            alert('🚫 Wähle zuerst einen Song aus der Warteliste aus.');
+            return;
+        }
+        const buyerEmail = prompt('Gib deine E-Mail ein. So gilt fair: maximal 2 Stream Extras pro Nutzer und Stream.');
+        if (!buyerEmail || !buyerEmail.includes('@')) {
+            alert('🚫 Bitte gib eine gültige E-Mail ein.');
+            return;
+        }
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.65';
+            btn.innerHTML = '⏳ STRIPE WIRD GEÖFFNET...';
+        }
         try {
             const res = await fetch('/api/create-bonus-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ feature, songId })
+                body: JSON.stringify({ feature, songId, buyerEmail })
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
             window.location.href = data.url;
         } catch (err) {
             alert('🚫 ' + err.message);
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.innerHTML = originalText;
+            if (btn) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = originalText;
+            }
+        }
+    }
+
+    function handleStripeReturnParams() {
+        const params = new URLSearchParams(window.location.search);
+        const afterHoursPaid = params.get('after_hours_paid');
+        if (afterHoursPaid) {
+            localStorage.setItem('mondo_after_hours_pass', afterHoursPaid);
+            alert('🌙💎 After Hours gekauft! Du kannst nach den freien 90 Minuten einmalig einen Song in der Verlängerungszeit einreichen.');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (params.get('bonus') === 'success') {
+            alert('✅ Stream Extra bezahlt! Die Aktion wird automatisch in der Warteliste markiert.');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (params.get('bonus') === 'cancel') {
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     }
 
@@ -1103,13 +1170,15 @@
         const songLink = document.getElementById('songLink').value; const min = parseInt(document.getElementById('durationMin').value) || 0; const sec = parseInt(document.getElementById('durationSec').value) || 0;
         const genre = document.getElementById('genre').value; const errBox = document.getElementById('submit-error-box');
         
-        const res = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artist, title, duration: (min * 60) + sec, genre, songLink }) });
+        const afterHoursSessionId = (currentQueuePhase === 'base_full' || currentQueuePhase === 'extension') ? (localStorage.getItem('mondo_after_hours_pass') || '') : '';
+        const res = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artist, title, duration: (min * 60) + sec, genre, songLink, afterHoursSessionId }) });
         const resData = await res.json();
         
         if (resData.error) {
             errBox.innerText = "🚫 " + resData.error; errBox.style.display = "block";
         } else {
             errBox.style.display = "none"; 
+            if (resData.afterHoursPassUsed) localStorage.removeItem('mondo_after_hours_pass');
             
             const overlay = document.createElement('div');
             overlay.style = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(10,10,14,0.96); z-index:10000; display:flex; justify-content:center; align-items:flex-start; padding: 20px; overflow-y: auto; backdrop-filter: blur(8px); box-sizing: border-box;";
@@ -1123,28 +1192,7 @@
                     <strong style="color:var(--neon-cyan);">CODE-HINWEIS:</strong><br>
                     Der Code ist <strong>nur fürs Voting im Stream</strong>.
                 </div>
-                <div style="border:2px solid var(--neon-gold); border-radius:16px; padding:18px; background:rgba(255,215,0,0.06); box-shadow:0 0 18px rgba(255,215,0,0.18); margin-top: 18px;">
-                    <h2 style="color:var(--neon-gold); border-bottom:2px solid var(--neon-gold); padding-bottom:8px; margin:0 0 14px 0; font-size:24px; text-shadow:0 0 10px rgba(255,215,0,0.6);">👑 Willst du deinen Song pushen?</h2>
-                    <p style="font-family:sans-serif; color:#ddd; line-height:1.45; margin:0 0 12px 0;">Nach dem Einsenden kannst du freiwillig einen Bonus kaufen. Die Bezahlung läuft direkt über Stripe. Dein Voting-Code bleibt nur fürs Voting im Stream.</p>
-                    <div style="font-family:sans-serif; background:rgba(255,255,255,0.07); border:1px dashed rgba(255,255,255,0.35); border-radius:12px; padding:12px; color:#f3f4f6; margin:0 0 14px 0; line-height:1.45; text-align:left;">
-                        <strong>Limits pro Künstler:</strong><br>
-                        🚀 Platz-1-Boost: 1× pro Stream<br>
-                        🌙 After Hours: 1× pro Stream<br>
-                        🎲 Song-Würfel: maximal 2× pro Stream
-                    </div>
-                    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin: 0 0 16px 0; font-family:sans-serif; font-weight:900; font-size:12px; letter-spacing:1px; text-transform:uppercase;">
-                        <span style="border:1px solid #ff5500; color:#ffbf8a; background:rgba(255,85,0,0.14); padding:7px 10px; border-radius:999px; box-shadow:0 0 10px rgba(255,85,0,0.3);">TWINT</span>
-                        <span style="border:1px solid #ffffff; color:#ffffff; background:rgba(255,255,255,0.10); padding:7px 10px; border-radius:999px; box-shadow:0 0 10px rgba(255,255,255,0.18);">Apple Pay</span>
-                        <span style="border:1px solid var(--neon-cyan); color:var(--neon-cyan); background:rgba(0,242,254,0.10); padding:7px 10px; border-radius:999px; box-shadow:0 0 10px rgba(0,242,254,0.25);">Google Pay</span>
-                        <span style="border:1px solid var(--neon-green); color:var(--neon-green); background:rgba(34,197,94,0.10); padding:7px 10px; border-radius:999px; box-shadow:0 0 10px rgba(34,197,94,0.22);">Karte</span>
-                    </div>
-                    <p style="font-family:sans-serif; color:#a7f3d0; line-height:1.35; margin:0 0 16px 0; font-size:13px;">Im Stripe-Checkout werden die verfügbaren Zahlungsarten automatisch angezeigt, z.B. TWINT, Apple Pay, Google Pay oder Karte.</p>
-                    <div style="display:grid; gap:12px;">
-                        <button type="button" onclick="startBonusCheckout('priority_boost', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-cyan), #60efff); color:black; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-cyan); font-family:'Impact', sans-serif; cursor:pointer;">🚀 Platz 1 Push – CHF 6.20<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.82;">Automatisch: Song springt auf Platz 1 · Limit: 1×</span></button>
-                        <button type="button" onclick="startBonusCheckout('after_hours', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-orange), #ff9a3d); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-orange); font-family:'Impact', sans-serif; cursor:pointer;">🌙 After Hours nach 90 Min – CHF 5.00<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Automatisch: Song kommt in die Verlängerung · Limit: 1×</span></button>
-                        <button type="button" onclick="startBonusCheckout('song_dice', '${resData.songId}', this)" style="display:block; width:100%; border:none; text-decoration:none; background:linear-gradient(90deg, var(--neon-pink), #ff5cad); color:white; padding:14px; border-radius:10px; font-size:20px; letter-spacing:1px; box-shadow:0 0 15px var(--neon-pink); font-family:'Impact', sans-serif; cursor:pointer;">🎲 Song Würfel – CHF 3.50<br><span style="font-family:sans-serif; font-size:12px; letter-spacing:0; font-weight:bold; opacity:0.9;">Automatisch: Zufälliger Song wird ausgewählt · Limit: max. 2×</span></button>
-                    </div>
-                </div>
+                <div style="background:rgba(255,215,0,0.08); border:1px dashed var(--neon-gold); border-radius:12px; padding:14px; margin-top:18px; font-family:sans-serif; color:#fff7cc; line-height:1.45;">💸💎 Stream Extras findest du unter dem Song-Einreichen-Abschnitt und bei den Songs in der Warteliste.</div>
                 <button onclick="this.parentElement.parentElement.remove()" style="background: #2a2a35; border: 1px solid #4a4a5a; padding: 16px; color: white; margin-top: 18px; width: 100%; border-radius: 10px; font-size: 18px; cursor: pointer; text-transform: uppercase; font-family: 'Impact', sans-serif;">OHNE BONUS SCHLIESSEN</button>
             </div>`;
             document.body.appendChild(overlay);
@@ -1166,6 +1214,7 @@
         document.getElementById('live-badge').style.display = "none";
         document.getElementById('countdown').innerText = `${d} TAGE, ${h} STD. / ${m} MIN.`;
     }
+    handleStripeReturnParams();
     setInterval(updateCountdown, 60000); updateCountdown();
     setInterval(loadQueue, 5000); loadQueue();
 </script>
