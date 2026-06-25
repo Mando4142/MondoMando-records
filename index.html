@@ -1266,34 +1266,42 @@
 
             let accTime = 0;
             activeSongs.forEach((item, activeIndex) => {
-                let timeText = activeIndex === 0 ? `🔥 PLATZ 1 / NEXT UP 🔥` : `#${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN`;
+                const isPaidExtra = item.isBoosted || item.isDice;
+                let timeText = activeIndex === 0
+                    ? (isPaidExtra ? `🔥 PLATZ 1 / NEXT UP 🔥` : `#1 · NEXT UP`)
+                    : (isPaidExtra ? `🔥 #${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN` : `#${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN`);
                 accTime += item.duration + FEEDBACK_BUFFER_SEC;
-                
+
                 let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
                 let badges = '';
                 if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span>';
                 if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲💎 SONG-WÜRFEL</span>';
-                const firstSongInfo = activeIndex === 0 ? '<div style="margin-top:7px; color:var(--neon-orange); font-size:15px; font-weight:900; text-shadow:0 0 9px var(--neon-orange);">🔥 Dieser Song steht aktuell auf Platz 1 der Warteliste!</div>' : '';
+                const paidSongInfo = isPaidExtra ? '<div style="margin-top:7px; color:var(--neon-orange); font-size:15px; font-weight:900; text-shadow:0 0 9px var(--neon-orange);">🔥 Bezahltes Stream Extra – dieser Song wurde gepusht!</div>' : '';
                 const pushButton = activeIndex === 0
-                    ? '<button type="button" disabled style="margin-top:10px; opacity:0.65; background:#333; color:#fff; border:none; padding:9px 12px; border-radius:9px; font-weight:900;">🔥 Bereits Platz 1</button>'
+                    ? (isPaidExtra
+                        ? '<button type="button" disabled style="margin-top:10px; opacity:0.75; background:#333; color:#fff; border:none; padding:9px 12px; border-radius:9px; font-weight:900;">🔥 Bezahlt / Platz 1</button>'
+                        : '<button type="button" disabled style="margin-top:10px; opacity:0.65; background:#333; color:#fff; border:none; padding:9px 12px; border-radius:9px; font-weight:900;">Bereits Platz 1</button>')
                     : `<button type="button" onclick="startBonusCheckout('priority_boost', '${item.id}', this)" style="margin-top:10px; background:linear-gradient(90deg,var(--neon-cyan),#60efff); color:black; border:none; padding:10px 12px; border-radius:9px; font-family:sans-serif; font-weight:900; cursor:pointer; box-shadow:0 0 12px rgba(0,242,254,0.35);">🚀💎 Auf Platz 1 pushen</button>`;
+                const itemStyle = isPaidExtra
+                    ? 'border-color:var(--neon-orange); border-left-color:var(--neon-orange); box-shadow:0 0 18px rgba(255,85,0,0.45); background:rgba(255,85,0,0.07);'
+                    : '';
 
                 activeList.innerHTML += `
-                <div class="queue-item" style="${activeIndex === 0 ? 'border-color:var(--neon-orange); border-left-color:var(--neon-orange); box-shadow:0 0 18px rgba(255,85,0,0.45); background:rgba(255,85,0,0.07);' : (item.isBoosted ? 'border-color:var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,254,0.3);' : '')}">
+                <div class="queue-item" style="${itemStyle}">
                     <div>
-                        <h4 style="margin:0 0 5px 0;"><span class="queue-number-badge ${activeIndex === 0 ? 'first' : ''}">${activeIndex + 1}</span>${platformIcon} ${item.artist} - ${item.title}</h4>
+                        <h4 style="margin:0 0 5px 0;"><span class="queue-number-badge ${isPaidExtra ? 'first' : ''}">${activeIndex + 1}</span>${platformIcon} ${item.artist} - ${item.title}</h4>
                         <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
                         <div style="margin-top:8px;">${badges}</div>
-                        ${firstSongInfo}
+                        ${paidSongInfo}
                         ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲💎 Dieser Song wurde zufällig vom Song-Würfel ausgewählt!</div>' : ''}
                         ${pushButton}
                     </div>
-                    <div style="text-align:right; font-weight:bold; color:${activeIndex === 0 ? 'var(--neon-orange)' : 'var(--neon-gold)'}; font-family: 'Impact', sans-serif; letter-spacing: 1px;">
+                    <div style="text-align:right; font-weight:bold; color:${isPaidExtra ? 'var(--neon-orange)' : 'var(--neon-gold)'}; font-family: 'Impact', sans-serif; letter-spacing: 1px;">
                         ${timeText}
                     </div>
                 </div>`;
             });
-            
+
             queue.filter(item => item.isDone).forEach(item => {
                 doneList.innerHTML += `<div class="queue-item" style="opacity:0.5;"><h4>✔️ ${item.artist} - ${item.title}</h4></div>`;
             });
