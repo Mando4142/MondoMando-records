@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mondo Mando TikTok Overlay</title>
+    <style>
+        :root {
+            --neon-pink:#ff007f;
+            --neon-cyan:#00f2fe;
+            --neon-gold:#ffd700;
+            --neon-green:#22c55e;
+            --neon-orange:#ff5500;
+            --dark:rgba(5,5,10,.72);
+            --text:#ffffff;
+            --muted:#c7c7d4;
+        }
+
+        * { box-sizing:border-box; }
+
+        html, body {
+            margin:0;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+            background:transparent !important;
+            color:var(--text);
+            font-family:Impact, "Arial Black", sans-serif;
+        }
+
+        body {
+            display:flex;
+            justify-content:center;
+            align-items:flex-start;
+            padding:28px;
+        }
+
+        .overlay-wrap {
+            width:min(96vw, 760px);
+            pointer-events:none;
+        }
+
+        .panel {
+            background:linear-gradient(180deg, rgba(6,8,16,.78), rgba(3,3,8,.62));
+            border:2px solid rgba(0,242,254,.75);
+            border-radius:22px;
+            box-shadow:0 0 26px rgba(0,242,254,.35), inset 0 0 22px rgba(0,242,254,.08);
+            backdrop-filter:blur(8px);
+            padding:18px;
+        }
+
+        .title {
+            text-align:center;
+            letter-spacing:2px;
+            text-transform:uppercase;
+            font-size:34px;
+            color:var(--neon-cyan);
+            text-shadow:0 0 14px rgba(0,242,254,.85);
+            margin-bottom:12px;
+        }
+
+        .subline {
+            text-align:center;
+            color:#e5fbff;
+            font-family:Arial, sans-serif;
+            font-weight:900;
+            font-size:14px;
+            letter-spacing:.8px;
+            text-transform:uppercase;
+            margin-bottom:14px;
+        }
+
+        .queue {
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .song {
+            display:grid;
+            grid-template-columns:56px 1fr auto;
+            gap:12px;
+            align-items:center;
+            background:rgba(0,0,0,.58);
+            border:1px solid rgba(255,255,255,.14);
+            border-left:7px solid var(--neon-cyan);
+            border-radius:16px;
+            padding:12px 14px;
+            min-height:74px;
+            box-shadow:0 0 10px rgba(0,0,0,.35);
+        }
+
+        .song.paid {
+            border-color:var(--neon-orange);
+            border-left-color:var(--neon-orange);
+            background:rgba(255,85,0,.13);
+            box-shadow:0 0 20px rgba(255,85,0,.42), inset 0 0 12px rgba(255,85,0,.08);
+        }
+
+        .song.first {
+            transform:scale(1.02);
+        }
+
+        .num {
+            width:48px;
+            height:48px;
+            border-radius:999px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:#08111f;
+            border:2px solid var(--neon-cyan);
+            box-shadow:0 0 12px rgba(0,242,254,.55);
+            color:#fff;
+            font-size:22px;
+        }
+
+        .song.paid .num {
+            border-color:var(--neon-orange);
+            background:rgba(255,85,0,.28);
+            box-shadow:0 0 16px rgba(255,85,0,.75);
+        }
+
+        .song-title {
+            font-size:25px;
+            line-height:1.05;
+            color:white;
+            text-shadow:0 0 8px rgba(255,255,255,.20);
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+
+        .song-meta {
+            margin-top:5px;
+            color:var(--muted);
+            font-family:Arial, sans-serif;
+            font-weight:800;
+            font-size:13px;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+
+        .status {
+            text-align:right;
+            color:var(--neon-gold);
+            font-size:16px;
+            letter-spacing:.6px;
+            min-width:112px;
+        }
+
+        .song.paid .status {
+            color:var(--neon-orange);
+            text-shadow:0 0 10px rgba(255,85,0,.8);
+        }
+
+        .badges {
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            margin-top:8px;
+        }
+
+        .badge {
+            font-family:Arial, sans-serif;
+            font-size:12px;
+            font-weight:900;
+            border-radius:999px;
+            padding:4px 8px;
+            white-space:nowrap;
+        }
+
+        .boost { background:var(--neon-cyan); color:#001018; box-shadow:0 0 10px rgba(0,242,254,.65); }
+        .dice { background:var(--neon-pink); color:#fff; box-shadow:0 0 10px rgba(255,0,127,.65); }
+        .after { background:#7000ff; color:#fff; box-shadow:0 0 10px rgba(112,0,255,.65); }
+
+        .empty {
+            text-align:center;
+            color:#e5e7eb;
+            font-family:Arial, sans-serif;
+            font-weight:900;
+            padding:26px 12px;
+            border:1px dashed rgba(255,255,255,.25);
+            border-radius:16px;
+            background:rgba(0,0,0,.35);
+        }
+
+        .dice-stage {
+            position:fixed;
+            inset:0;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            background:radial-gradient(circle at center, rgba(255,85,0,.30), rgba(0,0,0,.58) 60%, rgba(0,0,0,.78));
+            z-index:999;
+            padding:30px;
+        }
+
+        .dice-box {
+            width:min(94vw, 860px);
+            border:4px solid var(--neon-orange);
+            border-radius:30px;
+            background:linear-gradient(180deg, rgba(15,10,5,.96), rgba(0,0,0,.92));
+            box-shadow:0 0 55px rgba(255,85,0,.75), inset 0 0 26px rgba(255,85,0,.20);
+            padding:26px;
+            text-align:center;
+            animation:pop .35s ease-out;
+        }
+
+        @keyframes pop {
+            from { transform:scale(.82); opacity:0; }
+            to { transform:scale(1); opacity:1; }
+        }
+
+        .dice-head {
+            color:var(--neon-orange);
+            text-shadow:0 0 18px rgba(255,85,0,.9);
+            font-size:48px;
+            letter-spacing:2px;
+            text-transform:uppercase;
+            margin-bottom:18px;
+        }
+
+        .reel {
+            position:relative;
+            overflow:hidden;
+            height:120px;
+            border:2px solid rgba(255,255,255,.25);
+            border-radius:20px;
+            background:#050508;
+            box-shadow:inset 0 0 20px rgba(255,255,255,.08);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-bottom:18px;
+        }
+
+        .reel::before, .reel::after {
+            content:"";
+            position:absolute;
+            left:0;
+            right:0;
+            height:28px;
+            z-index:2;
+            pointer-events:none;
+        }
+
+        .reel::before { top:0; background:linear-gradient(180deg, #050508, transparent); }
+        .reel::after { bottom:0; background:linear-gradient(0deg, #050508, transparent); }
+
+        .reel-name {
+            font-size:38px;
+            line-height:1.05;
+            color:white;
+            text-shadow:0 0 14px rgba(255,255,255,.55);
+            padding:0 24px;
+            animation:shake .12s linear infinite;
+        }
+
+        @keyframes shake {
+            0% { transform:translateY(-2px); }
+            50% { transform:translateY(2px); }
+            100% { transform:translateY(-2px); }
+        }
+
+        .winner {
+            display:none;
+            color:var(--neon-green);
+            text-shadow:0 0 18px rgba(34,197,94,.9);
+            font-size:34px;
+            text-transform:uppercase;
+            margin-top:8px;
+        }
+
+        .winner-song {
+            display:none;
+            margin-top:12px;
+            color:var(--neon-gold);
+            font-size:40px;
+            text-shadow:0 0 18px rgba(255,215,0,.9);
+        }
+
+        .pulse-win {
+            animation:winPulse .7s ease-in-out infinite alternate;
+        }
+
+        @keyframes winPulse {
+            from { transform:scale(1); }
+            to { transform:scale(1.04); }
+        }
+
+        @media (max-width:600px) {
+            body { padding:14px; }
+            .title { font-size:27px; }
+            .song { grid-template-columns:46px 1fr; }
+            .status { grid-column:2; text-align:left; min-width:0; font-size:14px; }
+            .num { width:40px; height:40px; font-size:19px; }
+            .song-title { font-size:21px; }
+            .dice-head { font-size:34px; }
+            .reel-name { font-size:28px; }
+            .winner-song { font-size:30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay-wrap">
+        <div class="panel">
+            <div class="title">🎵 Mondo Mando Warteliste</div>
+            <div class="subline">Live aus dem Stream · bezahlte Extras mit 🔥 markiert</div>
+            <div id="queue" class="queue">
+                <div class="empty">Warteliste wird geladen...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="diceStage" class="dice-stage">
+        <div class="dice-box">
+            <div class="dice-head">🎲 Song-Würfel läuft...</div>
+            <div class="reel">
+                <div id="reelName" class="reel-name">...</div>
+            </div>
+            <div id="winnerText" class="winner">🚀 Neuer Platz 1!</div>
+            <div id="winnerSong" class="winner-song"></div>
+        </div>
+    </div>
+
+<script>
+    const FEEDBACK_BUFFER_SEC = 120;
+    let lastDiceKey = localStorage.getItem('mondo_overlay_last_dice_key') || '';
+    let firstLoadDone = false;
+    let currentSongs = [];
+    let animationRunning = false;
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, m => ({
+            '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'
+        }[m]));
+    }
+
+    function songName(song) {
+        return `${song.artist || 'Unbekannt'} - ${song.title || 'Ohne Titel'}`;
+    }
+
+    function getDiceKey(song) {
+        if (!song) return '';
+        return `${song.id || song.voteCode || songName(song)}-${song.diceSelectedAt || song.diceBuyerEmail || 'dice'}`;
+    }
+
+    function renderQueue(data) {
+        const queueBox = document.getElementById('queue');
+        const queue = (data.queue || []).filter(s => !s.isDone && !s.isAfterHours);
+        currentSongs = queue;
+
+        if (!queue.length) {
+            queueBox.innerHTML = '<div class="empty">Aktuell sind keine Songs in der Warteliste.</div>';
+            return;
+        }
+
+        let accTime = 0;
+        queueBox.innerHTML = queue.slice(0, 8).map((song, index) => {
+            const isPaid = !!(song.isBoosted || song.isDice);
+            const platformIcon = song.platform === 'spotify' ? '🟢' : (song.platform === 'youtube' ? '🔴' : '🎵');
+            const waitText = index === 0
+                ? (isPaid ? '🔥 PLATZ 1' : '#1 NEXT')
+                : (isPaid ? `🔥 #${index + 1}` : `#${index + 1}`);
+            const waitMin = Math.floor(accTime / 60);
+            const timeText = index === 0 ? waitText : `${waitText}<br><span style="font-family:Arial,sans-serif;font-size:12px;">~${waitMin} Min</span>`;
+            accTime += (parseInt(song.duration) || 0) + FEEDBACK_BUFFER_SEC;
+
+            let badges = '';
+            if (song.isBoosted) badges += '<span class="badge boost">🚀💎 Platz 1 Push</span>';
+            if (song.isDice) badges += '<span class="badge dice">🎲💎 Song-Würfel</span>';
+            if (song.isAfterHours) badges += '<span class="badge after">🌙💎 After Hours</span>';
+
+            return `
+                <div class="song ${isPaid ? 'paid' : ''} ${index === 0 ? 'first' : ''}">
+                    <div class="num">${index + 1}</div>
+                    <div>
+                        <div class="song-title">${platformIcon} ${escapeHtml(songName(song))}</div>
+                        <div class="song-meta">${escapeHtml(song.genre || 'Genre offen')}</div>
+                        <div class="badges">${badges}</div>
+                    </div>
+                    <div class="status">${timeText}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function maybeStartDiceAnimation(data) {
+        const diceSongs = (data.queue || [])
+            .filter(s => s.isDice && !s.isDone && !s.isAfterHours)
+            .sort((a,b) => (b.diceSelectedAt || 0) - (a.diceSelectedAt || 0));
+
+        const newest = diceSongs[0];
+        const newestKey = getDiceKey(newest);
+        if (!newestKey) return;
+
+        if (!firstLoadDone) {
+            lastDiceKey = newestKey;
+            localStorage.setItem('mondo_overlay_last_dice_key', newestKey);
+            return;
+        }
+
+        if (newestKey !== lastDiceKey && !animationRunning) {
+            lastDiceKey = newestKey;
+            localStorage.setItem('mondo_overlay_last_dice_key', newestKey);
+            startDiceAnimation(newest, data.queue || []);
+        }
+    }
+
+    function startDiceAnimation(winner, allSongs) {
+        animationRunning = true;
+        const stage = document.getElementById('diceStage');
+        const reelName = document.getElementById('reelName');
+        const winnerText = document.getElementById('winnerText');
+        const winnerSong = document.getElementById('winnerSong');
+
+        const candidates = (allSongs || []).filter(s => !s.isDone && !s.isAfterHours);
+        const list = candidates.length ? candidates : [winner];
+
+        winnerText.style.display = 'none';
+        winnerSong.style.display = 'none';
+        reelName.classList.remove('pulse-win');
+        stage.style.display = 'flex';
+
+        let tick = 0;
+        let speed = 70;
+        const maxTicks = 42;
+        const interval = setInterval(() => {
+            const song = list[tick % list.length];
+            reelName.innerText = songName(song);
+            tick++;
+
+            if (tick > maxTicks) {
+                clearInterval(interval);
+                reelName.innerText = songName(winner);
+                reelName.classList.add('pulse-win');
+                winnerText.style.display = 'block';
+                winnerSong.style.display = 'block';
+                winnerSong.innerText = songName(winner);
+
+                setTimeout(() => {
+                    stage.style.display = 'none';
+                    animationRunning = false;
+                    loadOverlay();
+                }, 4500);
+            }
+        }, speed);
+    }
+
+    async function loadOverlay() {
+        try {
+            const res = await fetch('/api/queue?overlay=1', { cache: 'no-store' });
+            const data = await res.json();
+            renderQueue(data);
+            maybeStartDiceAnimation(data);
+            firstLoadDone = true;
+        } catch (e) {
+            document.getElementById('queue').innerHTML = '<div class="empty">Verbindung wird aufgebaut...</div>';
+        }
+    }
+
+    loadOverlay();
+    setInterval(loadOverlay, 1800);
+</script>
+</body>
+</html>
