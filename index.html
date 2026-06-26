@@ -482,6 +482,15 @@
             .viewer-code-output { font-size: 32px; letter-spacing: 6px; }
         }
 
+
+        .mmr-public-card { border-color: var(--neon-gold) !important; box-shadow:0 0 22px rgba(255,215,0,.24), inset 0 0 14px rgba(255,215,0,.08) !important; }
+        .mmr-public-intro { font-family:sans-serif; color:#e5e7eb; text-align:center; line-height:1.45; margin:0 0 14px 0; }
+        .mmr-public-row { display:flex; justify-content:space-between; align-items:center; gap:10px; background:rgba(5,5,7,.78); border:1px solid rgba(255,215,0,.25); border-radius:12px; padding:12px; margin-top:8px; font-family:sans-serif; }
+        .mmr-public-row.top1 { border-color:var(--neon-gold); box-shadow:0 0 16px rgba(255,215,0,.25); }
+        .mmr-public-name { color:#fff; font-weight:900; }
+        .mmr-public-rank { color:var(--neon-cyan); font-size:12px; font-weight:800; margin-top:4px; }
+        .mmr-public-points { color:var(--neon-gold); font-weight:900; white-space:nowrap; }
+
     </style>
 </head>
 <body>
@@ -514,6 +523,13 @@
                 <div id="viewerCodeOutput" class="viewer-code-output"></div>
                 <button type="button" id="viewerCopyBtn" class="btn-viewer-code" style="display:none; margin-top:10px;" onclick="copyViewerVotingCode()">📋 Code kopieren</button>
                 <div class="viewer-vote-hint">Wichtig: Der Code ist nur fürs Voting und kann nur einmal abstimmen.</div>
+            </div>
+
+            <!-- MMR SUPPORTER CLUB -->
+            <div id="mmr-supporter-card" class="card gold-glow mmr-public-card">
+                <h2 style="color:var(--neon-gold); border-bottom-color:var(--neon-gold); text-align:center;">🌍 MMR SUPPORTER CLUB</h2>
+                <p class="mmr-public-intro">Sammle MMR Points im TikTok-Live durch Likes, Shares, Follows, Chat und Support. Schreib im Chat <strong>!punkte</strong>, um deinen Stand zu checken.</p>
+                <div id="mmr-supporter-list"></div>
             </div>
 
 
@@ -1097,9 +1113,34 @@
             errBox.innerText = "🚫 " + resData.error;
             errBox.style.display = "block"; succBox.style.display = "none";
         } else {
-            errBox.style.display = "none"; succBox.style.display = "block";
+            errBox.style.display = "none";
+            succBox.innerText = resData.extraVoteUsed ? "✅ Deine Stimmen wurden gezählt! Deine MMR Extra-Stimme zählt zusätzlich für deine 1. Auswahl." : "✅ Deine Stimmen wurden erfolgreich gezählt!";
+            succBox.style.display = "block";
             document.getElementById('voteForm').reset();
         }
+    }
+
+
+    function escapePublicHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] || c));
+    }
+
+    function renderMmrSupporters(mmr) {
+        const box = document.getElementById('mmr-supporter-list');
+        const card = document.getElementById('mmr-supporter-card');
+        if (!box || !card) return;
+        const top = (mmr && mmr.top) ? mmr.top.slice(0, 5) : [];
+        if (!top.length) {
+            box.innerHTML = '<div style="font-family:sans-serif; color:#d1d5db; text-align:center; padding:12px; border:1px dashed rgba(255,215,0,.35); border-radius:12px;">Noch keine MMR Points gesammelt. Starte im TikTok-Live mit Likes, Shares und Chat!</div>';
+            return;
+        }
+        box.innerHTML = top.map(s => `<div class="mmr-public-row ${s.position === 1 ? 'top1' : ''}">
+            <div>
+                <div class="mmr-public-name">#${s.position} @${escapePublicHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''}</div>
+                <div class="mmr-public-rank">${escapePublicHtml(s.rank)}</div>
+            </div>
+            <div class="mmr-public-points">${s.points || 0} MMR</div>
+        </div>`).join('');
     }
 
     async function loadQueue() {
@@ -1107,7 +1148,7 @@
             const res = await fetch('/api/queue'); const data = await res.json();
             const queue = data.queue || []; const hallOfFame = data.hallOfFame || [];
             currentQueuePhase = data.phase || 'base';
-            serverHistoricalHits = data.historicalHits || {}; renderCalendar(); renderHallOfFamePlayer(hallOfFame); renderBonusAnnouncements(data.bonusAnnouncements || []); 
+            serverHistoricalHits = data.historicalHits || {}; renderCalendar(); renderHallOfFamePlayer(hallOfFame); renderBonusAnnouncements(data.bonusAnnouncements || []); renderMmrSupporters(data.mmr || {}); 
             
             // ================== ARCHIV-ANSICHT ==================
             if (selectedArchiveDate) {
@@ -1117,6 +1158,7 @@
                 document.getElementById('overtime-card').style.display = 'none';
                 document.getElementById('hit-card').style.display = 'none';
                 document.getElementById('done-card').style.display = 'none';
+                document.getElementById('mmr-supporter-card').style.display = 'none';
                 
                 let archiveHtml = `<div style="text-align:center; margin-bottom:20px;"><h3 style="color:var(--neon-cyan); font-size:24px; text-transform:uppercase; border-bottom: 2px solid var(--neon-cyan); display:inline-block; padding-bottom:5px;">Rückblick: ${selectedArchiveDate}</h3></div>`;
                 if (serverHistoricalHits[selectedArchiveDate] && serverHistoricalHits[selectedArchiveDate].length > 0) {
@@ -1136,6 +1178,7 @@
                 document.getElementById('waitlist-card').style.display = 'block';
                 document.getElementById('hit-card').style.display = 'block';
                 document.getElementById('done-card').style.display = 'block';
+                document.getElementById('mmr-supporter-card').style.display = 'block';
             }
 
             // ================== LIVE-ANSICHT ==================
