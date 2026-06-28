@@ -454,6 +454,7 @@
         const status = mmr.tikfinityStatus || {};
         const top = mmr.top || [];
         const events = mmr.recentEvents || [];
+        const legends = mmr.legends || [];
         const statusColor = status.connected ? '#22c55e' : '#ef4444';
         const statusText = status.connected ? 'VERBUNDEN' : 'NICHT VERBUNDEN';
         const bridgeText = status.bridgeConnected ? 'Bridge verbunden' : 'Bridge wartet';
@@ -463,7 +464,7 @@
             const encUser = encodeURIComponent(s.username || s.displayName || '');
             return `<div class="mmr-supporter-row ${s.position === 1 ? 'top1' : ''}">
                 <div style="flex:1; min-width:0;">
-                    <div class="mmr-supporter-name">#${s.position} @${escapeAdminHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''}</div>
+                    <div class="mmr-supporter-name">#${s.position} @${escapeAdminHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''} ${s.isMondoLegend ? '🏆 LEGEND' : ''} ${s.isVipSupporter ? '👑 VIP' : ''}</div>
                     <div class="mmr-supporter-rank">${escapeAdminHtml(s.rank)} · Likes: ${s.likes || 0} · Coins: ${s.giftCoins || 0} · Extra-Stimmen: ${s.extraVotes || 0}</div>
                     <div style="margin-top:6px;">
                         <button class="mmr-mini-btn" onclick="redeemMmrReward('${encUser}', 'shoutout')">📣 Shoutout 150</button>
@@ -480,6 +481,14 @@
             </div>`;
         }).join('') : '<div style="opacity:.8; font-family:sans-serif;">Noch keine Supporter-Punkte. Starte TikFinity und geh live.</div>';
 
+        const legendsHtml = legends.length ? `<div style="font-weight:900; color:var(--neon-gold); text-transform:uppercase; letter-spacing:.8px; margin-top:12px;">🏆 Mondo Legenden</div>${legends.map((s, idx) => `<div class="mmr-supporter-row top1">
+            <div style="flex:1; min-width:0;">
+                <div class="mmr-supporter-name">#${idx + 1} @${escapeAdminHtml(s.displayName || s.username)} 🏆 LEGEND</div>
+                <div class="mmr-supporter-rank">🏆 Mondo Legende · aktuell: ${s.points || 0} MMR · Lifetime: ${s.lifetimePoints || 0} MMR</div>
+            </div>
+            <div class="mmr-supporter-points">${s.points || 0} MMR</div>
+        </div>`).join('')}` : '';
+
         const eventHtml = events.length ? events.slice(0, 6).map(e => `<div class="mmr-recent-item">${formatMmrDate(e.timestamp)} · @${escapeAdminHtml(e.username)} · ${escapeAdminHtml(e.note || e.type)} · <strong>${e.points > 0 ? '+' : ''}${e.points} MMR</strong></div>`).join('') : '<div style="opacity:.75; font-family:sans-serif; font-size:12px; margin-top:8px;">Noch keine MMR Events.</div>';
 
         box.innerHTML = `
@@ -495,6 +504,7 @@
             </div>
             <div style="font-weight:900; color:var(--neon-gold); text-transform:uppercase; letter-spacing:.8px; margin-top:10px;">Top Supporter</div>
             ${topHtml}
+            ${legendsHtml}
             <div style="font-weight:900; color:var(--neon-cyan); text-transform:uppercase; letter-spacing:.8px; margin-top:12px;">Neueste MMR Events</div>
             ${eventHtml}
         `;
