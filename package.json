@@ -1,10 +1,11 @@
-{
+
   "name": "mondo-mando-studio",
   "version": "1.0.0",
   "description": "Song Submission Dashboard",
   "main": "server.js",
   "scripts": {
-    "start": "node patch-platform-checkboxes.js && node server.js"
+    "prestart": "node patch-platform-checkboxes.js",
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
