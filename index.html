@@ -490,6 +490,11 @@
         .mmr-public-name { color:#fff; font-weight:900; }
         .mmr-public-rank { color:var(--neon-cyan); font-size:12px; font-weight:800; margin-top:4px; }
         .mmr-public-points { color:var(--neon-gold); font-weight:900; white-space:nowrap; }
+        .mmr-public-badge { display:inline-block; margin-left:6px; padding:2px 7px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.5px; vertical-align:middle; }
+        .mmr-public-badge.legend { color:#111; background:var(--neon-gold); box-shadow:0 0 10px rgba(255,215,0,.55); }
+        .mmr-public-badge.vip { color:#fff; background:var(--neon-pink); box-shadow:0 0 10px rgba(255,0,127,.45); }
+        .mmr-legend-title { margin-top:14px; color:var(--neon-gold); font-family:Impact,sans-serif; font-size:20px; text-transform:uppercase; letter-spacing:1px; text-shadow:0 0 10px rgba(255,215,0,.55); }
+        .mmr-legend-row { border-color:var(--neon-gold) !important; box-shadow:0 0 16px rgba(255,215,0,.22); background:rgba(255,215,0,.06) !important; }
 
     </style>
 </head>
@@ -635,6 +640,19 @@
                                     <span style="font-family: sans-serif; font-size: 13px; color: #ff9999; line-height: 1.4;">Wer versucht das System mit Fake-Accounts oder erfundenen Namen auszutricksen, wird permanent von allen Mondo Mando Angeboten ausgeschlossen.</span>
                                 </div>
                             </label>
+
+                            <div class="checkbox-group" style="border-color: var(--neon-cyan); background-color: rgba(0, 242, 254, 0.06); flex-direction: column; gap: 10px; margin-top: 15px;">
+                                <div style="font-family: 'Impact', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--neon-cyan);">IST DEIN SONG AUF SPOTIFY UND/ODER YOUTUBE?</div>
+                                <label style="display: flex; align-items: center; gap: 12px; margin: 0; cursor: pointer; font-family: sans-serif; text-transform: none; font-size: 15px;">
+                                    <input type="checkbox" id="platformSpotify" value="spotify" style="width: 20px; height: 20px; margin: 0; flex-shrink: 0;">
+                                    <span>🟢 Spotify</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 12px; margin: 0; cursor: pointer; font-family: sans-serif; text-transform: none; font-size: 15px;">
+                                    <input type="checkbox" id="platformYoutube" value="youtube" style="width: 20px; height: 20px; margin: 0; flex-shrink: 0;">
+                                    <span>🔴 YouTube</span>
+                                </label>
+                                <div style="font-family: sans-serif; font-size: 13px; color: #bff9ff; line-height: 1.4;">Du kannst Spotify, YouTube oder beide ankreuzen.</div>
+                            </div>
                         </div>
                         
                         <div id="submit-error-box"></div>
@@ -653,19 +671,19 @@
                     <p class="booster-preview-subtitle">Diese Extras sind nicht mehr an dein eigenes Einreichen gebunden. Jeder kann Stream Extras kaufen. Zum Schutz gilt: maximal 2 Extras pro Nutzer und Stream.</p>
                     <div class="booster-preview-grid">
                         <div class="booster-preview-item">
-                            <div class="booster-preview-name">🚀 Platz 1 Push – CHF 6.20 oder 10000 MMR Points oder 10000 MMR Points</div>
+                            <div class="booster-preview-name">🚀 Platz 1 Push – CHF 6.20 oder 10000 MMR Points oder 10000 MMR Points oder 10000 MMR Points</div>
                             <div class="booster-preview-desc">Wähle einen Song aus der Warteliste und pushe ihn automatisch auf Platz 1. Mit MMR Points wird dieses Extra manuell im Stream eingelöst.</div>
                             <span class="booster-preview-limit">Limit: maximal 2 Extras pro Nutzer und Stream</span><br>
                             <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-cyan),#60efff); color:#001;" onclick="document.getElementById('waitlist-card').scrollIntoView({behavior:'smooth'});">🚀 Song in der Warteliste auswählen</button>
                         </div>
                         <div class="booster-preview-item orange">
-                            <div class="booster-preview-name">🌙 After Hours – CHF 5.00 oder 3500 MMR Points oder 3500 MMR Points</div>
+                            <div class="booster-preview-name">🌙 After Hours – CHF 5.00 oder 3500 MMR Points oder 3500 MMR Points oder 3500 MMR Points</div>
                             <div class="booster-preview-desc">Nach dem Kauf wirst du einmalig freigeschaltet, damit du deinen Song nach den freien 90 Minuten in der Verlängerungszeit einreichen kannst. Mit MMR Points bekommst du den Pass manuell von Mondo Mando.</div>
                             <span class="booster-preview-limit">Limit: maximal 2 Extras pro Nutzer und Stream</span><br>
                             <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-orange),#ff9a3d); color:white;" onclick="startBonusCheckout('after_hours', null, this)">🌙 After Hours kaufen</button>
                         </div>
                         <div class="booster-preview-item pink">
-                            <div class="booster-preview-name">🎲 Song Würfel – CHF 3.50 oder 750 MMR Points</div>
+                            <div class="booster-preview-name">🎲 Song Würfel – CHF 3.50 oder 750 MMR Points oder 750 MMR Points</div>
                             <div class="booster-preview-desc">Der Song-Würfel pickt zufällig einen Song aus der aktuellen Warteliste und pusht ihn direkt auf Platz 1. Mit MMR Points wird dieses Extra manuell im Stream eingelöst.</div>
                             <span class="booster-preview-limit">Limit: maximal 2 Extras pro Nutzer und Stream</span><br>
                             <button type="button" class="stream-extra-buy-btn" style="background:linear-gradient(90deg,var(--neon-pink),#ff5cad); color:white;" onclick="startBonusCheckout('song_dice', null, this)">🎲 Song Würfel kaufen</button>
@@ -726,7 +744,7 @@
                 <div style="display:grid; gap:10px; margin-bottom:15px;">
                     <div style="background:rgba(0,242,254,0.08); border:1px solid var(--neon-cyan); border-radius:10px; padding:12px;"><strong style="color:var(--neon-cyan);">🚀 Song Push auf Platz 1 – CHF 6.20</strong><br>Du kannst einen Song aus der Warteliste auswählen und automatisch auf Platz 1 pushen.<br><span style="color:#d9ffff; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
                     <div style="background:rgba(255,85,0,0.10); border:1px solid var(--neon-orange); border-radius:10px; padding:12px;"><strong style="color:var(--neon-orange);">🌙 Stream-Verlängerung / After Hours – CHF 5.00</strong><br>Nach dem Kauf wirst du einmalig freigeschaltet, damit du deinen Song nach den freien 90 Minuten in der Verlängerungszeit einreichen kannst. Mit MMR Points bekommst du den Pass manuell von Mondo Mando. Die gesamte Verlängerungszeit beträgt maximal 30 Minuten.<br><span style="color:#ffd8bf; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
-                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50 oder 750 MMR Points</strong><br>Der Song-Würfel pickt zufällig einen Song aus der aktuellen Warteliste und pusht ihn direkt auf Platz 1. Mit MMR Points wird dieses Extra manuell im Stream eingelöst.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
+                    <div style="background:rgba(255,0,127,0.08); border:1px solid var(--neon-pink); border-radius:10px; padding:12px;"><strong style="color:var(--neon-pink);">🎲 Song Würfel – CHF 3.50 oder 750 MMR Points oder 750 MMR Points</strong><br>Der Song-Würfel pickt zufällig einen Song aus der aktuellen Warteliste und pusht ihn direkt auf Platz 1. Mit MMR Points wird dieses Extra manuell im Stream eingelöst.<br><span style="color:#ffd1e8; font-size:13px;"><strong>Limit:</strong> maximal 2 Extras pro Nutzer und Stream.</span></div>
                     <div style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.35); border-radius:10px; padding:12px; color:#f3f4f6;"><strong>Fair-Play & Schutz:</strong> Stream Extras sind nicht auf Künstler beschränkt. Pro Nutzer sind maximal 2 Extras pro Stream erlaubt. Beim Kauf wird die E-Mail zur Limit-Kontrolle verwendet, damit niemand das System mit dauernden eigenen Pushs austrickst.</div>
                 </div>
                 <p style="margin-top: 0; margin-bottom: 15px;">Bezahlen läuft sicher über Stripe. Die verfügbaren Zahlungsarten können je nach Gerät und Freischaltung angezeigt werden, z.B. TWINT, Apple Pay, Google Pay, Karte, Link oder Klarna.</p>
@@ -1125,22 +1143,48 @@
         return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] || c));
     }
 
+
+    function getPlatformIcon(item) {
+        const platforms = Array.isArray(item && item.platforms) ? item.platforms : [];
+        const platform = (item && item.platform) || '';
+        const hasSpotify = platforms.includes('spotify') || platform === 'spotify';
+        const hasYoutube = platforms.includes('youtube') || platform === 'youtube';
+        if (hasSpotify && hasYoutube) return '<span style="color:#1DB954; margin-right:4px;">🟢</span><span style="color:#FF0000; margin-right:5px;">🔴</span>';
+        if (hasSpotify) return '<span style="color:#1DB954; margin-right:5px;">🟢</span>';
+        if (hasYoutube) return '<span style="color:#FF0000; margin-right:5px;">🔴</span>';
+        return '🎵';
+    }
+
     function renderMmrSupporters(mmr) {
         const box = document.getElementById('mmr-supporter-list');
         const card = document.getElementById('mmr-supporter-card');
         if (!box || !card) return;
         const top = (mmr && mmr.top) ? mmr.top.slice(0, 5) : [];
-        if (!top.length) {
+        const legends = (mmr && mmr.legends) ? mmr.legends.slice(0, 10) : [];
+
+        const rowHtml = (s, opts = {}) => {
+            const legendBadge = (s.isMondoLegend || opts.legend) ? '<span class="mmr-public-badge legend">🏆 LEGEND</span>' : '';
+            const vipBadge = s.isVipSupporter ? '<span class="mmr-public-badge vip">👑 VIP</span>' : '';
+            return `<div class="mmr-public-row ${s.position === 1 && !opts.legend ? 'top1' : ''} ${opts.legend ? 'mmr-legend-row' : ''}">
+                <div>
+                    <div class="mmr-public-name">#${s.position} @${escapePublicHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''} ${legendBadge} ${vipBadge}</div>
+                    <div class="mmr-public-rank">${escapePublicHtml(opts.legend ? '🏆 Mondo Legende' : s.rank)}</div>
+                </div>
+                <div class="mmr-public-points">${s.points || 0} MMR</div>
+            </div>`;
+        };
+
+        if (!top.length && !legends.length) {
             box.innerHTML = '<div style="font-family:sans-serif; color:#d1d5db; text-align:center; padding:12px; border:1px dashed rgba(255,215,0,.35); border-radius:12px;">Noch keine MMR Points gesammelt. Starte im TikTok-Live mit Likes, Shares und Chat!</div>';
             return;
         }
-        box.innerHTML = top.map(s => `<div class="mmr-public-row ${s.position === 1 ? 'top1' : ''}">
-            <div>
-                <div class="mmr-public-name">#${s.position} @${escapePublicHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''}</div>
-                <div class="mmr-public-rank">${escapePublicHtml(s.rank)}</div>
-            </div>
-            <div class="mmr-public-points">${s.points || 0} MMR</div>
-        </div>`).join('');
+
+        const topHtml = top.length ? top.map(s => rowHtml(s)).join('') : '';
+        const legendsHtml = legends.length
+            ? `<div class="mmr-legend-title">🏆 Mondo Legenden</div>${legends.map((s, idx) => rowHtml({...s, position: idx + 1}, { legend: true })).join('')}`
+            : '';
+
+        box.innerHTML = `${topHtml}${legendsHtml}`;
     }
 
     async function loadQueue() {
@@ -1268,7 +1312,7 @@
                     let timeText = activeIndex === 0 ? `🌙 NEXT UP` : `WARTEZEIT: ~${Math.floor(otAccTime/60)} MIN`;
                     otAccTime += item.duration + FEEDBACK_BUFFER_SEC;
                     
-                    let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
+                    let platformIcon = getPlatformIcon(item);
                     let badges = '';
                     if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span>';
                     if (item.isAfterHours) badges += '<span style="background:#7000ff; color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; border: 1px solid #b577ff; box-shadow: 0 0 8px #7000ff;">🌙💎 AFTER HOURS</span>';
@@ -1315,7 +1359,7 @@
                     : (isPaidExtra ? `🔥 #${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN` : `#${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN`);
                 accTime += item.duration + FEEDBACK_BUFFER_SEC;
 
-                let platformIcon = item.platform === 'spotify' ? '<span style="color:#1DB954; margin-right:5px;">🟢</span>' : (item.platform === 'youtube' ? '<span style="color:#FF0000; margin-right:5px;">🔴</span>' : '🎵');
+                let platformIcon = getPlatformIcon(item);
                 let badges = '';
                 if (item.isBoosted) badges += '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span>';
                 if (item.isDice) badges += '<span style="background:var(--neon-pink); color:white; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:6px; font-weight:bold; box-shadow: 0 0 8px var(--neon-pink);">🎲💎 SONG-WÜRFEL</span>';
@@ -1419,9 +1463,19 @@
         e.preventDefault(); const artist = document.getElementById('artistName').value; const title = document.getElementById('songTitle').value;
         const songLink = document.getElementById('songLink').value; const min = parseInt(document.getElementById('durationMin').value) || 0; const sec = parseInt(document.getElementById('durationSec').value) || 0;
         const genre = document.getElementById('genre').value; const errBox = document.getElementById('submit-error-box');
+        const platformSpotify = document.getElementById('platformSpotify') && document.getElementById('platformSpotify').checked;
+        const platformYoutube = document.getElementById('platformYoutube') && document.getElementById('platformYoutube').checked;
+        const platforms = [];
+        if (platformSpotify) platforms.push('spotify');
+        if (platformYoutube) platforms.push('youtube');
+        if (platforms.length === 0) {
+            errBox.innerText = "🚫 Bitte kreuze an, ob dein Song auf Spotify, YouTube oder auf beiden ist.";
+            errBox.style.display = "block";
+            return;
+        }
         
         const afterHoursSessionId = (currentQueuePhase === 'base_full' || currentQueuePhase === 'extension') ? (localStorage.getItem('mondo_after_hours_pass') || '') : '';
-        const res = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artist, title, duration: (min * 60) + sec, genre, songLink, afterHoursSessionId }) });
+        const res = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artist, title, duration: (min * 60) + sec, genre, songLink, afterHoursSessionId, platforms }) });
         const resData = await res.json();
         
         if (resData.error) {
