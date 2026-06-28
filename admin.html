@@ -40,6 +40,12 @@
         .link-icon { font-size: 20px; text-decoration: none; margin-right: 10px; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
         .icon-spotify { background: #1DB954; color: black; }
         .icon-youtube { background: #FF0000; color: white; }
+        .platform-logo-group { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .platform-logo-badge { display:inline-flex; align-items:center; gap:7px; text-decoration:none; border-radius:999px; padding:8px 12px; font-family:sans-serif; font-weight:900; font-size:13px; letter-spacing:.4px; border:1px solid rgba(255,255,255,.12); transition:transform .15s ease, box-shadow .15s ease; }
+        .platform-logo-badge:hover { transform:translateY(-1px) scale(1.02); }
+        .platform-logo-badge.spotify { background:#1DB954; color:#08120b; box-shadow:0 0 12px rgba(29,185,84,.35); }
+        .platform-logo-badge.youtube { background:#FF0000; color:white; box-shadow:0 0 12px rgba(255,0,0,.35); }
+        .platform-logo-symbol { font-size:16px; line-height:1; }
 
         .btn-trash { background: #ef4444; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
         .btn-hit-toggle { background: linear-gradient(45deg, var(--neon-gold), #ccac00); color: black; border: none; padding: 14px 20px; font-family: 'Impact', sans-serif; text-transform: uppercase; border-radius: 6px; cursor: pointer; }
@@ -194,7 +200,26 @@
         textEl.style.textShadow = `0 0 10px ${textEl.style.color}`;
     }
 
-    async function loadAdminQueue() {
+    
+    function getPlatformLogoHtml(item) {
+        const platforms = Array.isArray(item && item.platforms) ? item.platforms : [];
+        const platform = (item && item.platform) || '';
+        const normalized = [];
+        if (platforms.includes('spotify') || platform === 'spotify' || platform === 'both') normalized.push('spotify');
+        if (platforms.includes('youtube') || platform === 'youtube' || platform === 'both') normalized.push('youtube');
+        if (!normalized.length) {
+            if (/spotify\.com/i.test(item?.songLink || '')) normalized.push('spotify');
+            else if (/youtube\.com|youtu\.be/i.test(item?.songLink || '')) normalized.push('youtube');
+        }
+        if (!normalized.length) return `<a href="${item.songLink}" target="_blank" class="link-icon icon-text">LINK</a>`;
+        return `<div class="platform-logo-group">${normalized.map(name => {
+            if (name === 'spotify') return `<a href="${item.songLink}" target="_blank" class="platform-logo-badge spotify" title="Spotify"><span class="platform-logo-symbol">🟢</span><span>Spotify</span></a>`;
+            if (name === 'youtube') return `<a href="${item.songLink}" target="_blank" class="platform-logo-badge youtube" title="YouTube"><span class="platform-logo-symbol">▶</span><span>YouTube</span></a>`;
+            return '';
+        }).join('')}</div>`;
+    }
+
+async function loadAdminQueue() {
         if(!token) return;
         try {
             const res = await fetch('/api/queue'); const data = await res.json();
@@ -327,21 +352,17 @@
                 hitExportList.innerHTML = '<div style="color:#8e8e9f; text-align:center; padding: 10px;">Noch keine Tracks als Hit markiert.</div>';
             } else {
                 hitSongs.forEach(item => {
-                    let iconHtml = `<span class="link-icon icon-text">LINK</span>`;
-                    if(item.platform === 'spotify') iconHtml = `<span class="link-icon icon-spotify">🟢 SPOTIFY</span>`;
-                    if(item.platform === 'youtube') iconHtml = `<span class="link-icon icon-youtube">🔴 YOUTUBE</span>`;
+                    let iconHtml = getPlatformLogoHtml(item);
                     hitExportList.innerHTML += `<div class="admin-item" style="border-color: var(--neon-gold); padding: 12px 20px;">
                             <div class="song-details"><h3 style="color: var(--neon-gold); margin:0;">⭐ ${item.artist} - ${item.title}</h3></div>
-                            <div class="actions-flex"><a href="${item.songLink}" target="_blank">${iconHtml}</a></div>
+                            <div class="actions-flex">${iconHtml}</div>
                         </div>`;
                 });
             }
 
             queue.forEach((item, index) => {
                 const min = Math.floor(item.duration / 60); const sec = item.duration % 60;
-                let iconHtml = `<span class="link-icon icon-text">LINK</span>`;
-                if(item.platform === 'spotify') iconHtml = `<span class="link-icon icon-spotify">🟢 SPOTIFY</span>`;
-                if(item.platform === 'youtube') iconHtml = `<span class="link-icon icon-youtube">🔴 YOUTUBE</span>`;
+                let iconHtml = getPlatformLogoHtml(item);
 
                 // GENERIERUNG DER DREI PREMIUM BADGES
                 let boostBadge = item.isBoosted ? '<span style="background:var(--neon-cyan); color:black; padding:3px 8px; border-radius:4px; font-size:12px; margin-right:5px; font-family:\'Impact\'; vertical-align:middle; box-shadow:0 0 10px var(--neon-cyan);">🚀💎 PLATZ 1 PUSH</span> ' : '';
@@ -367,11 +388,11 @@
                             <div class="song-details">
                                 <h3 style="margin:0;">${titlePrefix}${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3>
                                 ${boostInfo}${afterInfo}${diceInfo}
-                                <p style="margin:5px 0 0 0;">Genre: ${item.genre} | ⏱️ ${min+2}:${sec < 10 ? '0':''}${sec} Min | Code: ${item.voteCode ? '✅' : '❌'}</p>
+                                <p style="margin:5px 0 0 0;">Genre: ${item.genre} | ⏱️ ${min}:${sec < 10 ? '0':''}${sec} Min <span style="color:var(--neon-gold); font-weight:900;">+1 Min</span></p>
                             </div>
                         </div>
                         <div class="actions-flex">
-                            <a href="${item.songLink}" target="_blank">${iconHtml}</a>
+                            ${iconHtml}
                             <button class="btn-hit-toggle" onclick="toggleHit(${index})">HIT ⭐</button>
                             <button class="btn-delete" onclick="toggleDone(${index})">✓</button>
                             <button class="btn-trash" onclick="trashSong(${index})">🗑️</button>
@@ -394,11 +415,11 @@
                             <div class="song-details">
                                 <h3 style="margin:0; color:#ffd8bf;">${titlePrefix}${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3>
                                 ${boostInfo}${afterInfo}${diceInfo}
-                                <p style="margin:5px 0 0 0;">Genre: ${item.genre} | ⏱️ ${min+2}:${sec < 10 ? '0':''}${sec} Min | Code: ${item.voteCode ? '✅' : '❌'}</p>
+                                <p style="margin:5px 0 0 0;">Genre: ${item.genre} | ⏱️ ${min}:${sec < 10 ? '0':''}${sec} Min <span style="color:var(--neon-gold); font-weight:900;">+1 Min</span></p>
                             </div>
                         </div>
                         <div class="actions-flex">
-                            <a href="${item.songLink}" target="_blank">${iconHtml}</a>
+                            ${iconHtml}
                             <button class="btn-hit-toggle" onclick="toggleHit(${index})">HIT ⭐</button>
                             <button class="btn-delete" onclick="toggleDone(${index})">✓</button>
                             <button class="btn-trash" onclick="trashSong(${index})">🗑️</button>
@@ -409,7 +430,7 @@
                     doneList.innerHTML += `<div class="admin-item is-done-admin ${item.isBoosted ? 'extra-boost is-extra-paid' : ''} ${item.isAfterHours ? 'extra-after is-extra-paid' : ''} ${item.isDice ? 'extra-dice is-extra-paid' : ''}">
                             <div class="song-details"><h3 style="margin:0;">${boostBadge}${afterHoursBadge}${diceBadge}${item.artist} - ${item.title}</h3>${doneNotes}</div>
                             <div class="actions-flex">
-                                <a href="${item.songLink}" target="_blank">${iconHtml}</a>
+                                ${iconHtml}
                                 <button class="btn-control" onclick="toggleDone(${index})">↩</button>
                             </div>
                         </div>`;
@@ -454,7 +475,6 @@
         const status = mmr.tikfinityStatus || {};
         const top = mmr.top || [];
         const events = mmr.recentEvents || [];
-        const legends = mmr.legends || [];
         const statusColor = status.connected ? '#22c55e' : '#ef4444';
         const statusText = status.connected ? 'VERBUNDEN' : 'NICHT VERBUNDEN';
         const bridgeText = status.bridgeConnected ? 'Bridge verbunden' : 'Bridge wartet';
@@ -464,7 +484,7 @@
             const encUser = encodeURIComponent(s.username || s.displayName || '');
             return `<div class="mmr-supporter-row ${s.position === 1 ? 'top1' : ''}">
                 <div style="flex:1; min-width:0;">
-                    <div class="mmr-supporter-name">#${s.position} @${escapeAdminHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''} ${s.isMondoLegend ? '🏆 LEGEND' : ''} ${s.isVipSupporter ? '👑 VIP' : ''}</div>
+                    <div class="mmr-supporter-name">#${s.position} @${escapeAdminHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''}</div>
                     <div class="mmr-supporter-rank">${escapeAdminHtml(s.rank)} · Likes: ${s.likes || 0} · Coins: ${s.giftCoins || 0} · Extra-Stimmen: ${s.extraVotes || 0}</div>
                     <div style="margin-top:6px;">
                         <button class="mmr-mini-btn" onclick="redeemMmrReward('${encUser}', 'shoutout')">📣 Shoutout 150</button>
@@ -481,14 +501,6 @@
             </div>`;
         }).join('') : '<div style="opacity:.8; font-family:sans-serif;">Noch keine Supporter-Punkte. Starte TikFinity und geh live.</div>';
 
-        const legendsHtml = legends.length ? `<div style="font-weight:900; color:var(--neon-gold); text-transform:uppercase; letter-spacing:.8px; margin-top:12px;">🏆 Mondo Legenden</div>${legends.map((s, idx) => `<div class="mmr-supporter-row top1">
-            <div style="flex:1; min-width:0;">
-                <div class="mmr-supporter-name">#${idx + 1} @${escapeAdminHtml(s.displayName || s.username)} 🏆 LEGEND</div>
-                <div class="mmr-supporter-rank">🏆 Mondo Legende · aktuell: ${s.points || 0} MMR · Lifetime: ${s.lifetimePoints || 0} MMR</div>
-            </div>
-            <div class="mmr-supporter-points">${s.points || 0} MMR</div>
-        </div>`).join('')}` : '';
-
         const eventHtml = events.length ? events.slice(0, 6).map(e => `<div class="mmr-recent-item">${formatMmrDate(e.timestamp)} · @${escapeAdminHtml(e.username)} · ${escapeAdminHtml(e.note || e.type)} · <strong>${e.points > 0 ? '+' : ''}${e.points} MMR</strong></div>`).join('') : '<div style="opacity:.75; font-family:sans-serif; font-size:12px; margin-top:8px;">Noch keine MMR Events.</div>';
 
         box.innerHTML = `
@@ -504,7 +516,6 @@
             </div>
             <div style="font-weight:900; color:var(--neon-gold); text-transform:uppercase; letter-spacing:.8px; margin-top:10px;">Top Supporter</div>
             ${topHtml}
-            ${legendsHtml}
             <div style="font-weight:900; color:var(--neon-cyan); text-transform:uppercase; letter-spacing:.8px; margin-top:12px;">Neueste MMR Events</div>
             ${eventHtml}
         `;
