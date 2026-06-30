@@ -83,7 +83,8 @@ let dbData = {
     viewerDeviceCodes: {},
     mmrSupporters: {},
     mmrEvents: [],
-    mmrRedemptions: []
+    mmrRedemptions: [],
+    longSongMonthlyUsage: {}
 };
 
 let votingTimeout = null;
@@ -112,6 +113,56 @@ function createUniqueVotingCode() {
         safety++;
     }
     return code;
+}
+
+
+
+function getSwissMonthKey(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Zurich',
+        year: 'numeric',
+        month: '2-digit'
+    }).formatToParts(date);
+    const year = parts.find(p => p.type === 'year')?.value || String(date.getFullYear());
+    const month = parts.find(p => p.type === 'month')?.value || String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+}
+
+function cleanMonthlyArtistKey(artist) {
+    return String(artist || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .slice(0, 120);
+}
+
+function cleanupLongSongMonthlyUsage() {
+    if (!dbData.longSongMonthlyUsage) dbData.longSongMonthlyUsage = {};
+    const currentMonth = getSwissMonthKey();
+    const months = Object.keys(dbData.longSongMonthlyUsage);
+    months.forEach(month => {
+        if (month !== currentMonth) delete dbData.longSongMonthlyUsage[month];
+    });
+}
+
+function hasUsedLongSongThisMonth(artistKey) {
+    cleanupLongSongMonthlyUsage();
+    const monthKey = getSwissMonthKey();
+    return !!(dbData.longSongMonthlyUsage?.[monthKey]?.[artistKey]);
+}
+
+function markLongSongUsedThisMonth(artistKey, song) {
+    cleanupLongSongMonthlyUsage();
+    const monthKey = getSwissMonthKey();
+    if (!dbData.longSongMonthlyUsage) dbData.longSongMonthlyUsage = {};
+    if (!dbData.longSongMonthlyUsage[monthKey]) dbData.longSongMonthlyUsage[monthKey] = {};
+    dbData.longSongMonthlyUsage[monthKey][artistKey] = {
+        songId: song.id,
+        artist: song.artist,
+        title: song.title,
+        duration: parseInt(song.duration) || 0,
+        timestamp: Date.now()
+    };
 }
 
 
@@ -186,6 +237,7 @@ if (fs.existsSync(DB_FILE)) {
         if (!dbData.mmrRedemptions) dbData.mmrRedemptions = [];
         if (dbData.likeExtensionActive === undefined) dbData.likeExtensionActive = false;
         if (dbData.likeExtensionMinutes === undefined) dbData.likeExtensionMinutes = 0;
+        if (!dbData.longSongMonthlyUsage) dbData.longSongMonthlyUsage = {};
         
         dbData.songQueue = dbData.songQueue.map(song => {
             if (!song.id) song.id = "S-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -1199,6 +1251,14 @@ app.post('/api/submit', (req, res) => {
         if (hasSubmitted) return res.status(400).json({ error: "Nur 1 Song pro Künstler erlaubt." });
     }
 
+    const submittedDurationSeconds = parseInt(duration) || 0;
+    const monthlyArtistKey = cleanMonthlyArtistKey(artist);
+    if (submittedDurationSeconds > 300 && hasUsedLongSongThisMonth(monthlyArtistKey)) {
+        return res.status(400).json({
+            error: "Songs über 5:00 Minuten dürfen pro Künstler nur 1x pro Monat eingereicht werden. Bitte sende diesen Monat einen Song mit maximal 5:00 Minuten."
+        });
+    }
+
     const totalSeconds = getTotalTimeSeconds();
     const baseMaxSeconds = BASE_LIMIT_MINUTES * 60;
     const likeExtensionSeconds = Math.max(0, (parseFloat(dbData.likeExtensionMinutes || dbData.extraTimeMinutes || 0) || 0) * 60);
@@ -1244,6 +1304,9 @@ app.post('/api/submit', (req, res) => {
     }
 
     dbData.songQueue.push(newSong);
+    if ((parseInt(newSong.duration) || 0) > 300) {
+        markLongSongUsedThisMonth(monthlyArtistKey, newSong);
+    }
     sortSongQueueByPaidOrder();
     saveToDB();
     res.json({ success: true, voteCode: newCode, songId: newSong.id, afterHoursPassUsed: wantsAfterHours });
