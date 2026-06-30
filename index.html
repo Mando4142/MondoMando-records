@@ -595,6 +595,11 @@
                 <!-- EINREICHE-FORMULAR -->
                 <div id="form-container">
 <form id="songForm" onsubmit="addSongToServer(event)">
+                        <div id="like-extension-banner" style="display:none; margin:0 0 18px 0; padding:16px; border:2px solid var(--neon-cyan); border-radius:12px; background:rgba(0,242,254,0.10); color:#dffcff; font-family:sans-serif; line-height:1.45; box-shadow:0 0 14px rgba(0,242,254,.25);">
+                            <strong style="color:var(--neon-gold); font-family:Impact, sans-serif; font-size:20px; letter-spacing:1px;">⚡ DANKE FÜR 50K LIKES!</strong><br>
+                            Ihr habt <strong>12 Minuten extra Sendezeit</strong> freigeschaltet. Neue Einsendungen landen jetzt in der <strong>Verlängerungs-Warteliste</strong>.
+                        </div>
+
                         <div class="form-group">
                             <label for="artistName">Künstlername</label>
                             <input type="text" id="artistName" required placeholder="z.B. Mando">
@@ -1234,6 +1239,15 @@
     }
 
 
+
+    function extensionQueueSort(a, b) {
+        const aPaid = !!(a.afterHoursBuyerEmail || a.afterHoursPaidAt);
+        const bPaid = !!(b.afterHoursBuyerEmail || b.afterHoursPaidAt);
+        if (aPaid !== bPaid) return aPaid ? -1 : 1;
+        if (aPaid && bPaid) return (a.afterHoursPaidAt || a.timestamp || 0) - (b.afterHoursPaidAt || b.timestamp || 0);
+        return (a.timestamp || 0) - (b.timestamp || 0);
+    }
+
     function getPlatformIcon(item) {
         return '';
     }
@@ -1342,7 +1356,14 @@
                     formContainer.style.display = 'block';
                     votingContainer.style.display = 'none';
                     offlineMessage.style.display = 'none';
-                    mainCardTitle.innerText = "⏳ 30 MIN. VERLÄNGERUNG ⏳";
+                    const likeBanner = document.getElementById('like-extension-banner');
+                    if (data.likeExtensionActive === true) {
+                        mainCardTitle.innerText = "⚡ 50K LIKES BONUS: +12 MIN ⚡";
+                        if (likeBanner) likeBanner.style.display = 'block';
+                    } else {
+                        mainCardTitle.innerText = "⏳ AFTER HOURS VERLÄNGERUNG ⏳";
+                        if (likeBanner) likeBanner.style.display = 'none';
+                    }
                     mainCardTitle.style.color = "var(--neon-orange)";
                     mainCardTitle.style.borderBottomColor = "var(--neon-orange)";
                     mainCard.className = "card orange-glow";
@@ -1353,6 +1374,8 @@
                     votingContainer.style.display = 'none';
                     offlineMessage.style.display = 'none';
                     mainCardTitle.innerText = "SONG EINREICHEN";
+                    const likeBanner = document.getElementById('like-extension-banner');
+                    if (likeBanner) likeBanner.style.display = 'none';
                     mainCardTitle.style.color = "#ffffff";
                     mainCardTitle.style.borderBottomColor = "var(--neon-pink)";
                     mainCard.className = "card pink-glow";
@@ -1366,7 +1389,7 @@
             
             // Trenne die Tracks: Alles was "After Hours" ist
             const overtimeQueueRaw = queue.filter(item => item.isAfterHours === true);
-            const overtimeActiveSongs = overtimeQueueRaw.filter(item => !item.isDone);
+            const overtimeActiveSongs = overtimeQueueRaw.filter(item => !item.isDone).sort(extensionQueueSort);
             
             // Die normale Warteliste behält nur die restlichen Tracks
             const activeSongs = queue.filter(item => !item.isDone && item.isAfterHours !== true);
@@ -1602,7 +1625,7 @@
         const songLinks = { spotify: spotifyLink, youtube: youtubeLink };
         const songLink = spotifyLink || youtubeLink;
         
-        const afterHoursSessionId = (currentQueuePhase === 'base_full' || currentQueuePhase === 'extension') ? (localStorage.getItem('mondo_after_hours_pass') || '') : '';
+        const afterHoursSessionId = (currentQueuePhase === 'base_full' || currentQueuePhase === 'after_hours' || currentQueuePhase === 'extension') ? (localStorage.getItem('mondo_after_hours_pass') || '') : '';
         const res = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ artist, title, duration: (min * 60) + sec, genre, songLink, spotifyLink, youtubeLink, songLinks, afterHoursSessionId, platforms, rulesAccepted }) });
         const resData = await res.json();
         
