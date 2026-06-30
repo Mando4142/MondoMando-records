@@ -134,6 +134,7 @@
 
                 <div class="admin-time-box" style="flex-direction:column; gap:10px; border-color:var(--neon-gold);">
                     <div class="section-title" style="margin:0; color:var(--neon-gold);">🌍 MMR SUPPORTER CLUB</div>
+                    <div style="font-family:sans-serif; font-size:13px; color:#d1d5db; line-height:1.45; border:1px dashed rgba(255,215,0,.45); border-radius:10px; padding:10px; background:rgba(255,215,0,.06);">Aktive MMR Extras: <strong>🗳️ Extra Stimme 400</strong>, <strong>🎲 Würfel 750</strong>, <strong>🌍 Wall 1200</strong>, <strong>👑 VIP 2500</strong>, <strong>🌙 After Hours 3500</strong>, <strong>🏆 Legende 5000</strong>, <strong>🚀 Platz 1 10000</strong>. Nur Shoutout ist entfernt.</div>
                     <div id="admin-mmr-list" style="font-family:sans-serif; font-size:14px; color:#eee;">Lädt MMR Points...</div>
                     <div style="display:grid; grid-template-columns:1fr 90px 1fr auto; gap:8px; align-items:center; margin-top:10px; font-family:sans-serif;">
                         <input id="mmrManualUser" type="text" placeholder="TikTok-Name" style="padding:10px; border-radius:8px; border:1px solid #333; background:#050507; color:white;">
@@ -146,7 +147,8 @@
                 <div class="section-title" style="color: #ffaa00;">🏆 EWIGE HALL OF FAME DER LEGENDEN</div>
                 <div id="admin-hof-list" style="margin-bottom: 20px;"></div>
 
-                <div class="section-title" style="color: var(--neon-gold);">⭐ Heutige Hits (Für Spotify/YouTube Export)</div>
+                <div class="section-title" style="color: var(--neon-gold);">⭐ HIT PLAYLIST LIVE (bleibt bis Reset)</div>
+                <button class="btn-control" style="background:#f97316; color:white; width:100%; margin:8px 0 12px 0; box-shadow:0 0 12px #f97316;" onclick="resetLiveHitPlaylist()">🧹 HIT PLAYLIST LIVE FÜR NEUEN STREAM ZURÜCKSETZEN</button>
                 <div id="admin-hit-export-list" style="margin-bottom: 20px;"></div>
 
                 <div class="section-title" style="color: var(--neon-cyan);">Offene Einsendungen 🔥</div>
@@ -162,6 +164,34 @@
     </div>
 <script>
     let token = ""; let sortableInstance = null; let sortableExtensionInstance = null; let adminCurrentQueue = [];
+
+
+    async function resetLiveHitPlaylist() {
+        if (!token) {
+            alert('🚫 Bitte zuerst im Admin einloggen.');
+            return;
+        }
+
+        if (!confirm('Hit Playlist Live wirklich für den neuen Stream zurücksetzen? Die Datums-Historie bleibt gespeichert.')) return;
+
+        try {
+            const res = await fetch('/api/admin/reset-live-hit-playlist', {
+                method: 'POST',
+                headers: { 'Authorization': token }
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.error) {
+                alert('🚫 Fehler beim Zurücksetzen: ' + (data.error || res.status));
+                return;
+            }
+
+            alert('✅ Hit Playlist Live wurde zurückgesetzt. Die Datums-Historie bleibt gespeichert.');
+            loadAdminQueue();
+        } catch (err) {
+            alert('🚫 Verbindung fehlgeschlagen. Bitte Server prüfen.');
+        }
+    }
 
     async function resetViewerVotingCodes() {
         if (!token) {
@@ -385,9 +415,9 @@ async function loadAdminQueue() {
                 </div>`;
             });
 
-            const hitSongs = queue.filter(item => item.isHit);
+            const hitSongs = data.liveHitPlaylist || queue.filter(item => item.isHit);
             if(hitSongs.length === 0) {
-                hitExportList.innerHTML = '<div style="color:#8e8e9f; text-align:center; padding: 10px;">Noch keine Tracks als Hit markiert.</div>';
+                hitExportList.innerHTML = '<div style="color:#8e8e9f; text-align:center; padding: 10px;">Noch keine Tracks in der Live-Hit-Playlist.</div>';
             } else {
                 hitSongs.forEach(item => {
                     let iconHtml = getPlatformLogoHtml(item);
@@ -526,7 +556,6 @@ async function loadAdminQueue() {
                     <div class="mmr-supporter-name">#${s.position} @${escapeAdminHtml(s.displayName || s.username)} ${s.isSubscriber ? '👑' : ''}</div>
                     <div class="mmr-supporter-rank">${escapeAdminHtml(s.rank)} · Likes: ${s.likes || 0} · Coins: ${s.giftCoins || 0} · Extra-Stimmen: ${s.extraVotes || 0}</div>
                     <div style="margin-top:6px;">
-                        <button class="mmr-mini-btn" onclick="redeemMmrReward('${encUser}', 'shoutout')">📣 Shoutout 150</button>
                         <button class="mmr-mini-btn vote" onclick="redeemMmrReward('${encUser}', 'extra_vote')">🗳️ Extra Stimme 400</button>
                         <button class="mmr-mini-btn dice" onclick="redeemMmrReward('${encUser}', 'song_dice')">🎲 Würfel 750</button>
                         <button class="mmr-mini-btn" onclick="redeemMmrReward('${encUser}', 'supporter_wall')">🌍 Wall 1200</button>
