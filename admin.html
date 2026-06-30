@@ -46,6 +46,7 @@
         .platform-logo-badge.spotify { background:#1DB954; color:#08120b; box-shadow:0 0 12px rgba(29,185,84,.35); }
         .platform-logo-badge.youtube { background:#FF0000; color:white; box-shadow:0 0 12px rgba(255,0,0,.35); }
         .duration-feedback-chip { color:var(--neon-gold); font-weight:900; }
+        .duration-total-chip { color:var(--neon-cyan); font-weight:900; }
         .platform-logo-symbol { font-size:16px; line-height:1; }
 
         .btn-trash { background: #ef4444; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 16px; }
@@ -215,14 +216,16 @@
     }
 
     function formatDuration(seconds) {
-        const total = parseInt(seconds || 0, 10);
+        const total = Math.max(0, parseInt(seconds || 0, 10));
         const m = Math.floor(total / 60);
         const s = total % 60;
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     function durationWithFeedbackHtml(seconds) {
-        return `⏱️ ${formatDuration(seconds)} Min <span class="duration-feedback-chip">+1 Min Feedback</span>`;
+        const original = parseInt(seconds || 0, 10) || 0;
+        const total = original + 60;
+        return `⏱️ ${formatDuration(original)} Min <span class="duration-feedback-chip">+1 Min Feedback</span> = <span class="duration-total-chip">${formatDuration(total)} Min</span>`;
     }
 
 
