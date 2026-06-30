@@ -566,7 +566,10 @@ async function loadAdminQueue() {
                         <button class="mmr-mini-btn vote" style="background:#22c55e;color:#001b10;" onclick="redeemMmrReward('${encUser}', 'priority_boost')">🚀 Platz 1 10000</button>
                     </div>
                 </div>
-                <div class="mmr-supporter-points">${s.points || 0} MMR</div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                    <div class="mmr-supporter-points">${s.points || 0} MMR</div>
+                    <button class="mmr-mini-btn" style="background:#ef4444;color:white; box-shadow:0 0 10px rgba(239,68,68,.45);" onclick="deleteMmrSupporter('${encUser}')">🗑️ Löschen</button>
+                </div>
             </div>`;
         }).join('') : '<div style="opacity:.8; font-family:sans-serif;">Noch keine Supporter-Punkte. Starte TikFinity und geh live.</div>';
 
@@ -625,6 +628,37 @@ async function loadAdminQueue() {
             }
 
             alert('✅ Alle MMR Points wurden für den neuen Stream zurückgesetzt.');
+            loadAdminQueue();
+        } catch (err) {
+            alert('🚫 Verbindung fehlgeschlagen. Bitte Server prüfen.');
+        }
+    }
+
+
+    async function deleteMmrSupporter(encodedUser) {
+        const username = decodeURIComponent(encodedUser);
+        if (!token) {
+            alert('🚫 Bitte zuerst im Admin einloggen.');
+            return;
+        }
+
+        const typed = prompt(`@${username} wirklich aus der MMR-Liste löschen?\n\nDadurch verschwinden Punkte, Events und Einlösungen von diesem Supporter.\n\nTippe: LÖSCHEN`);
+        if (typed !== 'LÖSCHEN') return alert('Abgebrochen.');
+
+        try {
+            const res = await fetch('/api/admin/mmr/delete-supporter', {
+                method: 'POST',
+                headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.error) {
+                alert('🚫 Fehler beim Löschen: ' + (data.error || res.status));
+                return;
+            }
+
+            alert(`✅ @${username} wurde aus der MMR-Liste gelöscht.`);
             loadAdminQueue();
         } catch (err) {
             alert('🚫 Verbindung fehlgeschlagen. Bitte Server prüfen.');
