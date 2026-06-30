@@ -4,15 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mondo Mando - Admin Schaltzentrale</title>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js">
-    async function resetViewerVotingCodes() {
-        if (!confirm('Alle TikTok-Zuschauer-Codes für den nächsten Stream löschen?')) return;
-        await fetch('/api/admin/voting/reset-viewer-codes', { method: 'POST', headers: {'Authorization': token} });
-        alert('✅ Zuschauer-Codes wurden gelöscht.');
-        loadAdminQueue();
-    }
-
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         :root { --neon-pink: #ff007f; --neon-cyan: #00f2fe; --neon-gold: #ffd700; --text-main: #ffffff; --form-bg: rgba(19, 19, 26, 0.9); }
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Impact', 'Arial Black', sans-serif; color: var(--text-main); overflow: hidden; }
@@ -170,6 +162,35 @@
     </div>
 <script>
     let token = ""; let sortableInstance = null; let sortableExtensionInstance = null; let adminCurrentQueue = [];
+
+    async function resetViewerVotingCodes() {
+        if (!token) {
+            alert('🚫 Bitte zuerst im Admin einloggen.');
+            return;
+        }
+
+        if (!confirm('Alle TikTok-Zuschauer-Codes für den neuen Stream wirklich löschen?')) return;
+
+        try {
+            const res = await fetch('/api/admin/voting/reset-viewer-codes', {
+                method: 'POST',
+                headers: { 'Authorization': token }
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.error) {
+                alert('🚫 Fehler beim Zurücksetzen: ' + (data.error || res.status));
+                return;
+            }
+
+            alert('✅ Alle Zuschauer-Codes wurden für den neuen Stream zurückgesetzt.');
+            loadAdminQueue();
+        } catch (err) {
+            alert('🚫 Verbindung fehlgeschlagen. Bitte Server prüfen.');
+        }
+    }
+
 
     function escapeAdminHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c] || c));
