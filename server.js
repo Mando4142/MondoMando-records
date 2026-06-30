@@ -1,4 +1,4 @@
-require('dotenv').config();
+5require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const app = express();
@@ -1103,7 +1103,9 @@ app.get('/api/queue', (req, res) => {
 app.post('/api/submit', (req, res) => {
     if (dbData.systemOnline === false) return res.status(400).json({ error: "Das Einreicheformular ist aktuell offline!" });
 
-    const { artist, title, duration, genre, songLink, spotifyLink, youtubeLink, songLinks, platforms, afterHoursSessionId } = req.body;
+    if (!(rulesAccepted === true || rulesAccepted === 'true')) return res.status(400).json({ error: "Bitte lies und akzeptiere die Stream-Regeln." });
+
+    const { artist, title, duration, genre, songLink, spotifyLink, youtubeLink, songLinks, platforms, afterHoursSessionId, rulesAccepted } = req.body;
     const submitted = normalizeSongLinks({ songLink, spotifyLink, youtubeLink, songLinks, platforms });
     const submittedPlatforms = submitted.platforms;
     if (submittedPlatforms.length === 0) return res.status(400).json({ error: "Bitte kreuze Spotify, YouTube oder beide an." });
