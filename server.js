@@ -1450,6 +1450,25 @@ app.post('/api/admin/mmr/redeem', checkAdminAuth, (req, res) => {
 });
 
 
+
+app.post('/api/admin/mmr/delete-supporter', checkAdminAuth, (req, res) => {
+    const usernameRaw = String(req.body.username || '').trim();
+    const username = normalizeMmrUser(usernameRaw);
+    if (!username) return res.status(400).json({ error: 'TikTok-Name fehlt.' });
+    if (!dbData.mmrSupporters || !dbData.mmrSupporters[username]) {
+        return res.status(404).json({ error: 'Supporter nicht gefunden.' });
+    }
+
+    const removed = dbData.mmrSupporters[username];
+    delete dbData.mmrSupporters[username];
+
+    dbData.mmrEvents = (dbData.mmrEvents || []).filter(e => normalizeMmrUser(e.username) !== username);
+    dbData.mmrRedemptions = (dbData.mmrRedemptions || []).filter(r => normalizeMmrUser(r.username) !== username);
+
+    saveToDB();
+    res.json({ success: true, removed });
+});
+
 app.post('/api/admin/mmr/reset-points', checkAdminAuth, (req, res) => {
     const supporters = dbData.mmrSupporters || {};
     Object.values(supporters).forEach(supporter => {
