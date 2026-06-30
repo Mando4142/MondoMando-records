@@ -1021,7 +1021,7 @@ app.get('/api/queue', (req, res) => {
         else if (/youtube\.com|youtu\.be/i.test(song.songLink)) platform = 'youtube';
         return { 
             id: song.id, artist: song.artist, title: song.title, 
-            duration: song.duration, genre: song.genre, songLink: song.songLink, 
+            duration: parseInt(song.duration) || 0, genre: song.genre, songLink: song.songLink, 
             isHit: song.isHit, isDone: song.isDone, platform: song.platform || platform, platforms: Array.isArray(song.platforms) ? song.platforms : (song.platform ? [song.platform] : []), spotifyLink: song.spotifyLink || song.songLinks?.spotify || null, youtubeLink: song.youtubeLink || song.songLinks?.youtube || null, songLinks: song.songLinks || {},
             isDice: song.isDice || false,
             isBoosted: song.isBoosted || false,
