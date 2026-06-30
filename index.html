@@ -79,6 +79,8 @@
         .platform-link-fields { display:grid; gap:10px; margin-top:10px; }
         .platform-link-fields input { margin-top:5px; }
         .duration-feedback-chip { color:var(--neon-gold); font-weight:900; font-family:sans-serif; }
+        .song-duration-line { margin:4px 0 0 0; font-size:13px; color:#e5e7eb; font-family:sans-serif; font-weight:700; }
+        .song-duration-total { color:var(--neon-cyan); font-weight:900; }
 
         .checkbox-group { display: flex; align-items: flex-start; gap: 15px; background-color: rgba(5, 5, 7, 0.8); padding: 15px; border: 1px dashed var(--neon-pink); border-radius: 8px; margin-top: 10px; font-family: sans-serif; }
         
@@ -592,9 +594,10 @@
                             <input type="text" id="songTitle" required placeholder="Titel deines Tracks">
                         </div>
                         <div class="form-group">
-                            <label>Wo ist dein Song online?</label>
+                            <label>Auf welchen Plattformen sind deine Songs zu hören?</label>
                             <div class="platform-choice-box">
-                                <div class="platform-choice-title">Wähle die Plattform und füge den passenden Link ein</div>
+                                <div class="platform-choice-title">Auf welchen Plattformen sind deine Songs zu hören?</div>
+                                <div style="font-family:sans-serif; font-size:13px; color:#bff9ff; line-height:1.45; margin-bottom:10px;">Kreuze Spotify, YouTube oder beide Plattformen an und füge den passenden Link ein.</div>
                                 <div class="platform-choice-row">
                                     <label><input type="checkbox" id="platformSpotify" value="spotify" onchange="updatePlatformLinkFields()"> Spotify</label>
                                     <label><input type="checkbox" id="platformYoutube" value="youtube" onchange="updatePlatformLinkFields()"> YouTube</label>
@@ -609,7 +612,7 @@
                                         <input type="url" id="youtubeLink" placeholder="https://www.youtube.com/watch?v=...">
                                     </div>
                                 </div>
-                                <div style="font-size:13px; color:#bff9ff; line-height:1.4; margin-top:8px;">Wenn du beide ankreuzt, musst du beide Links eingeben. Im Admin werden dann beide Buttons angezeigt.</div>
+                                
                             </div>
                         </div>
                         <div class="form-group">
@@ -1164,14 +1167,24 @@
     }
 
     function formatDuration(seconds) {
-        const total = parseInt(seconds || 0, 10);
+        const total = Math.max(0, parseInt(seconds || 0, 10));
         const m = Math.floor(total / 60);
         const s = total % 60;
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    function totalWithFeedback(seconds) {
+        return (parseInt(seconds || 0, 10) || 0) + FEEDBACK_BUFFER_SEC;
+    }
+
+    function waitMinutes(seconds) {
+        return Math.max(0, Math.floor((parseInt(seconds || 0, 10) || 0) / 60));
+    }
+
     function durationWithFeedbackHtml(seconds) {
-        return `Songdauer: ${formatDuration(seconds)} <span class="duration-feedback-chip">+1 Min Feedback</span>`;
+        const original = parseInt(seconds || 0, 10) || 0;
+        const total = totalWithFeedback(original);
+        return `<span class="song-duration-line">Songdauer: ${formatDuration(original)} <span class="duration-feedback-chip">+1 Min Feedback</span> = <span class="song-duration-total">${formatDuration(total)} Min</span></span>`;
     }
 
     function escapePublicHtml(value) {
@@ -1323,8 +1336,8 @@
                 
                 let otAccTime = 0;
                 overtimeActiveSongs.forEach((item, activeIndex) => {
-                    let timeText = activeIndex === 0 ? `🌙 NEXT UP` : `WARTEZEIT: ~${Math.floor(otAccTime/60)} MIN`;
-                    otAccTime += item.duration + FEEDBACK_BUFFER_SEC;
+                    let timeText = activeIndex === 0 ? `🌙 NEXT UP` : `WARTEZEIT: ~${waitMinutes(otAccTime)} MIN`;
+                    otAccTime += (parseInt(item.duration) || 0) + FEEDBACK_BUFFER_SEC;
                     
                     let platformIcon = getPlatformIcon(item);
                     let badges = '';
@@ -1335,9 +1348,9 @@
                     overtimeList.innerHTML += `
                     <div class="queue-item" style="border-color:var(--neon-orange); border-left-color:var(--neon-orange); background: rgba(255, 85, 0, 0.05); box-shadow: 0 0 10px rgba(255,85,0,0.1);">
                         <div>
-                            <h4 style="margin:0 0 5px 0;">${platformIcon} ${item.artist} - ${item.title}</h4>
+                            <h4 style="margin:0 0 5px 0;">${item.artist} - ${item.title}</h4>
                             <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
-                            <p style="margin:4px 0 0 0; font-size:13px; color:#e5e7eb;">${durationWithFeedbackHtml(item.duration)}</p>
+                            <p class="song-duration-line">${durationWithFeedbackHtml(item.duration)}</p>
                             <div style="margin-top:8px;">${badges}</div>
                             ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲 Dieser Song wurde vom Song-Würfel ausgewählt!</div>' : ''}
                         </div>
@@ -1371,8 +1384,8 @@
                 const isPaidExtra = item.isBoosted || item.isDice;
                 let timeText = activeIndex === 0
                     ? (isPaidExtra ? `🔥 PLATZ 1 / NEXT UP 🔥` : `#1 · NEXT UP`)
-                    : (isPaidExtra ? `🔥 #${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN` : `#${activeIndex + 1} · WARTEZEIT: ~${Math.floor(accTime/60)} MIN`);
-                accTime += item.duration + FEEDBACK_BUFFER_SEC;
+                    : (isPaidExtra ? `🔥 #${activeIndex + 1} · WARTEZEIT: ~${waitMinutes(accTime)} MIN` : `#${activeIndex + 1} · WARTEZEIT: ~${waitMinutes(accTime)} MIN`);
+                accTime += (parseInt(item.duration) || 0) + FEEDBACK_BUFFER_SEC;
 
                 let platformIcon = getPlatformIcon(item);
                 let badges = '';
@@ -1391,8 +1404,9 @@
                 activeList.innerHTML += `
                 <div class="queue-item" style="${itemStyle}">
                     <div>
-                        <h4 style="margin:0 0 5px 0;"><span class="queue-number-badge ${isPaidExtra ? 'first' : ''}">${activeIndex + 1}</span>${platformIcon} ${item.artist} - ${item.title}</h4>
+                        <h4 style="margin:0 0 5px 0;"><span class="queue-number-badge ${isPaidExtra ? 'first' : ''}">${activeIndex + 1}</span>${item.artist} - ${item.title}</h4>
                         <p style="margin:0; font-size:14px; color:var(--text-muted);">Genre: ${item.genre}</p>
+                        <p class="song-duration-line">${durationWithFeedbackHtml(item.duration)}</p>
                         <div style="margin-top:8px;">${badges}</div>
                         ${paidSongInfo}
                         ${item.isDice ? '<div style="margin-top:7px; color:var(--neon-pink); font-size:13px; font-weight:900; text-shadow:0 0 8px var(--neon-pink);">🎲💎 Dieser Song wurde zufällig vom Song-Würfel ausgewählt!</div>' : ''}
