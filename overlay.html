@@ -371,7 +371,43 @@
             .reel-name { font-size:28px; }
             .winner-song { font-size:30px; }
         }
-    </style>
+    
+        .extension-wrap{
+            margin-top:14px;
+            border-top:2px solid rgba(255,136,0,.45);
+            padding-top:10px;
+        }
+        .extension-head{
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+            font-size: 22px;
+            letter-spacing: 1px;
+            color:#ffb45a;
+            text-shadow: 0 0 10px rgba(255,136,0,.75);
+            margin: 4px 0 8px 2px;
+        }
+        .extension-queue .empty{
+            border-color: rgba(255,136,0,.35);
+            color: #ffd5aa;
+        }
+        .song.extension{
+            border:2px solid rgba(255,136,0,.92);
+            box-shadow: 0 0 20px rgba(255,136,0,.32), inset 0 0 18px rgba(255,136,0,.06);
+            background: linear-gradient(180deg, rgba(255,136,0,.10), rgba(0,0,0,.75));
+        }
+        .song.extension .num{
+            border-color:#ff9b25;
+            color:#ffcf7b;
+            box-shadow:0 0 12px rgba(255,136,0,.55);
+        }
+        .song.extension .status{
+            color:#ffcf7b;
+            text-shadow:0 0 8px rgba(255,136,0,.45);
+        }
+        .song.extension .song-title{
+            color:#fff0db;
+        }
+
+</style>
 </head>
 <body>
     <div class="overlay-wrap">
@@ -380,6 +416,10 @@
             <div class="subline">Live aus dem Stream · bezahlte Extras mit 🔥 markiert</div>
             <div id="queue" class="queue">
                 <div class="empty">Warteliste wird geladen...</div>
+            </div>
+            <div id="extensionWrap" class="extension-wrap" style="display:none;">
+                <div class="extension-head">🌙 VERLÄNGERUNG / AFTER HOURS</div>
+                <div id="extensionQueue" class="queue extension-queue"></div>
             </div>
         </div>
     </div>
@@ -440,46 +480,72 @@
 
     function renderQueue(data) {
         const queueBox = document.getElementById('queue');
-        const queue = (data.queue || []).filter(s => !s.isDone && !s.isAfterHours);
-        currentSongs = queue;
+        const extensionWrap = document.getElementById('extensionWrap');
+        const extensionQueueBox = document.getElementById('extensionQueue');
 
-        if (!queue.length) {
-            queueBox.innerHTML = '<div class="empty">Aktuell sind keine Songs in der Warteliste.</div>';
-            return;
+        const mainQueue = (data.queue || []).filter(s => !s.isDone && !s.isAfterHours);
+        const extensionQueue = (data.queue || []).filter(s => !s.isDone && s.isAfterHours);
+        currentSongs = mainQueue;
+
+        function renderSongList(list, targetEl, opts = {}) {
+            const isExtension = !!opts.isExtension;
+            if (!list.length) {
+                targetEl.innerHTML = isExtension
+                    ? '<div class="empty">Noch keine Songs in der Verlängerung.</div>'
+                    : '<div class="empty">Aktuell sind keine Songs in der Warteliste.</div>';
+                return;
+            }
+
+            let accTime = 0;
+            targetEl.innerHTML = list.slice(0, 8).map((song, index) => {
+                const isPaid = !!(song.isBoosted || song.isDice);
+                const isNowPlaying = !isExtension && index === 0;
+                const waitMin = waitMinutes(accTime);
+
+                let waitText = '';
+                if (isNowPlaying) {
+                    waitText = '▶ LÄUFT JETZT';
+                } else if (isExtension) {
+                    waitText = `🌙 #${index + 1}`;
+                } else {
+                    waitText = isPaid ? `🔥 #${index + 1}` : `#${index + 1}`;
+                }
+
+                const timeText = isNowPlaying
+                    ? `<span class="now-badge">LIVE</span><br>${waitText}`
+                    : `${waitText}<br><span style="font-family:Arial,sans-serif;font-size:12px;">Wartezeit: ~${waitMin} Min</span>`;
+
+                accTime += (parseInt(song.duration) || 0) + FEEDBACK_BUFFER_SEC;
+
+                let badges = '';
+                if (song.isBoosted) badges += '<span class="badge boost">🚀💎 Platz 1 Push</span>';
+                if (song.isDice) badges += '<span class="badge dice">🎲💎 Song-Würfel</span>';
+                if (song.isAfterHours) badges += '<span class="badge after">🌙💎 After Hours</span>';
+
+                return `
+                    <div class="song ${isPaid ? 'paid' : ''} ${isNowPlaying ? 'first now-playing' : ''} ${isExtension ? 'extension' : ''}">
+                        <div class="num">${index + 1}</div>
+                        <div>
+                            <div class="song-title">${escapeHtml(songName(song))}</div>
+                            <div class="song-meta">${escapeHtml(song.genre || 'Genre offen')}</div>
+                            <div class="song-meta" style="font-size:12px;color:#e5e7eb;">${durationWithFeedbackHtml(song.duration)}</div>
+                            <div class="badges">${badges}</div>
+                        </div>
+                        <div class="status">${timeText}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        let accTime = 0;
-        queueBox.innerHTML = queue.slice(0, 8).map((song, index) => {
-            const isPaid = !!(song.isBoosted || song.isDice);
-            const platformIcon = '';
-            const isNowPlaying = index === 0;
-            const waitText = isNowPlaying
-                ? '▶ LÄUFT JETZT'
-                : (isPaid ? `🔥 #${index + 1}` : `#${index + 1}`);
-            const waitMin = waitMinutes(accTime);
-            const timeText = isNowPlaying
-                ? `<span class="now-badge">LIVE</span><br>${waitText}`
-                : `${waitText}<br><span style="font-family:Arial,sans-serif;font-size:12px;">Wartezeit: ~${waitMin} Min</span>`;
-            accTime += (parseInt(song.duration) || 0) + FEEDBACK_BUFFER_SEC;
+        renderSongList(mainQueue, queueBox, { isExtension: false });
 
-            let badges = '';
-            if (song.isBoosted) badges += '<span class="badge boost">🚀💎 Platz 1 Push</span>';
-            if (song.isDice) badges += '<span class="badge dice">🎲💎 Song-Würfel</span>';
-            if (song.isAfterHours) badges += '<span class="badge after">🌙💎 After Hours</span>';
-
-            return `
-                <div class="song ${isPaid ? 'paid' : ''} ${isNowPlaying ? 'first now-playing' : ''}">
-                    <div class="num">${index + 1}</div>
-                    <div>
-                        <div class="song-title">${escapeHtml(songName(song))}</div>
-                        <div class="song-meta">${escapeHtml(song.genre || 'Genre offen')}</div>
-                        <div class="song-meta" style="font-size:12px; color:#e5e7eb;">${durationWithFeedbackHtml(song.duration)}</div>
-                        <div class="badges">${badges}</div>
-                    </div>
-                    <div class="status">${timeText}</div>
-                </div>
-            `;
-        }).join('');
+        if (extensionQueue.length) {
+            extensionWrap.style.display = 'block';
+            renderSongList(extensionQueue, extensionQueueBox, { isExtension: true });
+        } else {
+            extensionWrap.style.display = 'none';
+            extensionQueueBox.innerHTML = '';
+        }
     }
 
     function maybeStartDiceAnimation(data) {
