@@ -142,6 +142,7 @@
                         <input id="mmrManualReason" type="text" placeholder="Grund, z.B. Extra Support" style="padding:10px; border-radius:8px; border:1px solid #333; background:#050507; color:white;">
                         <button class="btn-control" style="background:var(--neon-gold); color:black;" onclick="addMmrPoints()">+ MMR</button>
                     </div>
+                    <button class="btn-control" style="background:#ef4444; color:white; width:100%; margin-top:10px; box-shadow:0 0 14px #ef4444;" onclick="resetMmrPoints()">🧹 ALLE MMR POINTS FÜR NEUEN STREAM ZURÜCKSETZEN</button>
                 </div>
 
                 <div class="section-title" style="color: #ffaa00;">🏆 EWIGE HALL OF FAME DER LEGENDEN</div>
@@ -598,6 +599,36 @@ async function loadAdminQueue() {
         const res = await fetch('/api/admin/mmr/manual-add', { method:'POST', headers:{ 'Authorization': token, 'Content-Type':'application/json' }, body: JSON.stringify({ username, points, reason }) });
         const data = await res.json();
         if (data.error) alert('🚫 ' + data.error); else { alert('✅ MMR Points gespeichert.'); loadAdminQueue(); }
+    }
+
+
+    async function resetMmrPoints() {
+        if (!token) {
+            alert('🚫 Bitte zuerst im Admin einloggen.');
+            return;
+        }
+
+        const confirmText = 'RESET MMR';
+        const typed = prompt(`⚠️ Wirklich ALLE MMR Points zurücksetzen?\n\nDas setzt Punkte, Likes, Shares, Gifts, Extra-Stimmen und Einlösungen auf 0.\n\nTippe genau: ${confirmText}`);
+        if (typed !== confirmText) return alert('Abgebrochen.');
+
+        try {
+            const res = await fetch('/api/admin/mmr/reset-points', {
+                method: 'POST',
+                headers: { 'Authorization': token }
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || data.error) {
+                alert('🚫 Fehler beim Zurücksetzen: ' + (data.error || res.status));
+                return;
+            }
+
+            alert('✅ Alle MMR Points wurden für den neuen Stream zurückgesetzt.');
+            loadAdminQueue();
+        } catch (err) {
+            alert('🚫 Verbindung fehlgeschlagen. Bitte Server prüfen.');
+        }
     }
 
     async function redeemMmrReward(encodedUser, rewardKey) {
