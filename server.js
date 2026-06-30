@@ -70,7 +70,8 @@ let dbData = {
     usedCodes: {},
     tiedSongs: [],
     hallOfFame: [],
-    historicalHits: {}, 
+    historicalHits: {},
+    liveHitPlaylist: [], 
     systemOnline: true,
     extensionActive: false,
     votingEndsAt: null,
@@ -238,6 +239,7 @@ if (fs.existsSync(DB_FILE)) {
         if (dbData.likeExtensionActive === undefined) dbData.likeExtensionActive = false;
         if (dbData.likeExtensionMinutes === undefined) dbData.likeExtensionMinutes = 0;
         if (!dbData.longSongMonthlyUsage) dbData.longSongMonthlyUsage = {};
+        if (!Array.isArray(dbData.liveHitPlaylist)) dbData.liveHitPlaylist = [];
         
         dbData.songQueue = dbData.songQueue.map(song => {
             if (!song.id) song.id = "S-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
@@ -305,7 +307,6 @@ const MMR_RULES = {
 };
 
 const MMR_REWARDS = {
-    shoutout: { label: '📣 Shoutout im Stream', cost: 150 },
     extra_vote: { label: '🗳️ Extra Stimme', cost: 400 },
     song_dice: { label: '🎲 Songwürfel', cost: 750 },
     supporter_wall: { label: '🌍 Supporter-Wall', cost: 1200 },
@@ -474,9 +475,9 @@ function redeemMmrReward(username, rewardKey, options = {}) {
 
     let extraResult = null;
     let note = reward.label;
-
     if (rewardKey === 'extra_vote') {
         supporter.extraVotes = (supporter.extraVotes || 0) + 1;
+        note = '🗳️ MMR Extra Stimme eingelöst';
     }
 
     if (rewardKey === 'song_dice') {
@@ -999,6 +1000,72 @@ function redeemAfterHoursPass(sessionId, song) {
     return { ok: true };
 }
 
+
+function makeHitPlaylistEntry(song, dateStr = getSwissDateString(new Date())) {
+    const links = song.songLinks || {};
+    const spotifyLink = song.spotifyLink || links.spotify || null;
+    const youtubeLink = song.youtubeLink || links.youtube || null;
+    const platforms = Array.isArray(song.platforms)
+        ? song.platforms
+        : (song.platform ? [song.platform] : []);
+
+    return {
+        id: song.id,
+        artist: song.artist,
+        title: song.title,
+        genre: song.genre,
+        songLink: song.songLink || spotifyLink || youtubeLink || null,
+        spotifyLink,
+        youtubeLink,
+        songLinks: { spotify: spotifyLink, youtube: youtubeLink },
+        platforms,
+        date: dateStr,
+        addedAt: Date.now()
+    };
+}
+
+function sameHitSong(a, b) {
+    return String(a.artist || '').trim().toLowerCase() === String(b.artist || '').trim().toLowerCase()
+        && String(a.title || '').trim().toLowerCase() === String(b.title || '').trim().toLowerCase();
+}
+
+function addSongToLiveAndHistory(song) {
+    if (!dbData.liveHitPlaylist) dbData.liveHitPlaylist = [];
+    const dateStr = getSwissDateString(new Date());
+    const entry = makeHitPlaylistEntry(song, dateStr);
+
+    if (!dbData.liveHitPlaylist.some(existing => sameHitSong(existing, entry))) {
+        dbData.liveHitPlaylist.push(entry);
+    }
+
+    if (!dbData.historicalHits) dbData.historicalHits = {};
+    if (!dbData.historicalHits[dateStr]) dbData.historicalHits[dateStr] = [];
+    if (!dbData.historicalHits[dateStr].some(existing => sameHitSong(existing, entry))) {
+        dbData.historicalHits[dateStr].push(entry);
+    }
+}
+
+function removeSongFromLiveAndTodayHistory(song) {
+    if (!dbData.liveHitPlaylist) dbData.liveHitPlaylist = [];
+    dbData.liveHitPlaylist = dbData.liveHitPlaylist.filter(entry => !sameHitSong(entry, song));
+
+    const dateStr = getSwissDateString(new Date());
+    if (dbData.historicalHits && dbData.historicalHits[dateStr]) {
+        dbData.historicalHits[dateStr] = dbData.historicalHits[dateStr].filter(entry => !sameHitSong(entry, song));
+        if (dbData.historicalHits[dateStr].length === 0) delete dbData.historicalHits[dateStr];
+    }
+}
+
+function syncLiveHitPlaylistFromQueue() {
+    if (!Array.isArray(dbData.liveHitPlaylist)) dbData.liveHitPlaylist = [];
+    (dbData.songQueue || []).filter(song => song.isHit).forEach(song => {
+        if (!dbData.liveHitPlaylist.some(entry => sameHitSong(entry, song))) {
+            dbData.liveHitPlaylist.push(makeHitPlaylistEntry(song));
+        }
+    });
+}
+
+
 // AUTOMATISCHE VOTING-AUSWERTUNG
 function processVotingResult() {
     const hits = dbData.songQueue.filter(s => s.isHit);
@@ -1094,6 +1161,7 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))
 app.get('/regeln', (req, res) => res.sendFile(path.join(__dirname, 'regeln.html')));
 
 app.get('/api/queue', (req, res) => {
+    syncLiveHitPlaylistFromQueue();
     sortSongQueueByPaidOrder();
     const totalSeconds = getTotalTimeSeconds();
     const baseMaxSeconds = BASE_LIMIT_MINUTES * 60;
@@ -1587,18 +1655,27 @@ app.post('/api/admin/reorder-active', checkAdminAuth, (req, res) => {
 app.post('/api/queue/:index/hit', checkAdminAuth, (req, res) => {
     const index = parseInt(req.params.index);
     if (dbData.songQueue[index]) {
-        const song = dbData.songQueue[index]; song.isHit = !song.isHit;
-        const dateStr = getSwissDateString(new Date());
-        if (!dbData.historicalHits[dateStr]) dbData.historicalHits[dateStr] = [];
+        const song = dbData.songQueue[index];
+        song.isHit = !song.isHit;
+
         if (song.isHit) {
-            const exists = dbData.historicalHits[dateStr].find(s => s.artist === song.artist && s.title === song.title);
-            if (!exists) dbData.historicalHits[dateStr].push({ artist: song.artist, title: song.title, genre: song.genre, songLink: song.songLink });
+            addSongToLiveAndHistory(song);
         } else {
-            dbData.historicalHits[dateStr] = dbData.historicalHits[dateStr].filter(s => !(s.artist === song.artist && s.title === song.title));
-            if (dbData.historicalHits[dateStr].length === 0) delete dbData.historicalHits[dateStr];
+            removeSongFromLiveAndTodayHistory(song);
         }
-        saveToDB(); res.json({ success: true });
-    } else res.status(400).json({ error: "Index Fehler" });
+
+        saveToDB();
+        res.json({ success: true, isHit: song.isHit, liveHitPlaylist: dbData.liveHitPlaylist || [] });
+    } else {
+        res.status(400).json({ error: "Index Fehler" });
+    }
+});
+
+app.post('/api/admin/reset-live-hit-playlist', checkAdminAuth, (req, res) => {
+    dbData.liveHitPlaylist = [];
+    (dbData.songQueue || []).forEach(song => { song.isHit = false; });
+    saveToDB();
+    res.json({ success: true, message: 'Hit Playlist Live wurde zurückgesetzt.' });
 });
 
 app.post('/api/queue/:index/done', checkAdminAuth, (req, res) => {
