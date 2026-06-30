@@ -403,14 +403,24 @@
     let animationRunning = false;
 
     function formatDuration(seconds) {
-        const total = parseInt(seconds || 0, 10);
+        const total = Math.max(0, parseInt(seconds || 0, 10));
         const m = Math.floor(total / 60);
         const s = total % 60;
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+    function totalWithFeedback(seconds) {
+        return (parseInt(seconds || 0, 10) || 0) + FEEDBACK_BUFFER_SEC;
+    }
+
+    function waitMinutes(seconds) {
+        return Math.max(0, Math.floor((parseInt(seconds || 0, 10) || 0) / 60));
+    }
+
     function durationWithFeedbackHtml(seconds) {
-        return `Songdauer: ${formatDuration(seconds)} +1 Min Feedback`;
+        const original = parseInt(seconds || 0, 10) || 0;
+        const total = totalWithFeedback(original);
+        return `Songdauer: ${formatDuration(original)} +1 Min Feedback = ${formatDuration(total)} Min`;
     }
 
     function escapeHtml(str) {
@@ -446,10 +456,10 @@
             const waitText = isNowPlaying
                 ? '▶ LÄUFT JETZT'
                 : (isPaid ? `🔥 #${index + 1}` : `#${index + 1}`);
-            const waitMin = Math.floor(accTime / 60);
+            const waitMin = waitMinutes(accTime);
             const timeText = isNowPlaying
                 ? `<span class="now-badge">LIVE</span><br>${waitText}`
-                : `${waitText}<br><span style="font-family:Arial,sans-serif;font-size:12px;">~${waitMin} Min</span>`;
+                : `${waitText}<br><span style="font-family:Arial,sans-serif;font-size:12px;">Wartezeit: ~${waitMin} Min</span>`;
             accTime += (parseInt(song.duration) || 0) + FEEDBACK_BUFFER_SEC;
 
             let badges = '';
